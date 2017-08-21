@@ -30,13 +30,10 @@ import com.facebook.presto.spi.connector.ConnectorMetadata;
 import com.facebook.presto.spi.connector.ConnectorOutputMetadata;
 import com.facebook.presto.spi.predicate.TupleDomain;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 import io.airlift.slice.Slice;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -78,7 +75,6 @@ public class RestMetadata
     @Override
     public ConnectorTableLayout getTableLayout(ConnectorSession connectorSession, ConnectorTableLayoutHandle connectorTableLayoutHandle)
     {
-
         RestConnectorTableLayoutHandle tableLayoutHandle = Types.checkType(connectorTableLayoutHandle, RestConnectorTableLayoutHandle.class, "tableLayoutHandle");
         return new ConnectorTableLayout(tableLayoutHandle);
     }
@@ -113,7 +109,8 @@ public class RestMetadata
     @Override
     public Map<SchemaTableName, List<ColumnMetadata>> listTableColumns(ConnectorSession connectorSession, SchemaTablePrefix schemaTablePrefix)
     {
-        return null;
+        SchemaTableName schemaTableName = new SchemaTableName(schemaTablePrefix.getSchemaName(), schemaTablePrefix.getTableName());
+        return Collections.singletonMap(schemaTableName, rest.getTableMetadata(schemaTableName).getColumns());
     }
 
     @Override

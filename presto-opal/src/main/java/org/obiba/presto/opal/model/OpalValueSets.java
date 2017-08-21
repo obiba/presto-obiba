@@ -16,6 +16,7 @@ package org.obiba.presto.opal.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Lists;
 
 import java.util.Collection;
 import java.util.List;
@@ -54,6 +55,7 @@ public class OpalValueSets {
    * @return
    */
   public Collection<List<String>> getStringValues(List<OpalVariable> opalVariables) {
+    if (valueSets == null || valueSets.isEmpty()) return Lists.newArrayList();
     List<Integer> positions = opalVariables.stream().map(var -> variables.indexOf(var.getName())).collect(Collectors.toList());
     return valueSets.stream().map(vs -> vs.getStringValues(positions)).collect(Collectors.toList());
   }

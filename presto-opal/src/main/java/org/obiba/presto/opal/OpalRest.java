@@ -66,30 +66,32 @@ public class OpalRest implements Rest {
   @Override
   public ConnectorTableMetadata getTableMetadata(SchemaTableName schemaTableName) {
     initialize();
-    if (connectorTableMap.containsKey(schemaTableName)) return connectorTableMap.get(schemaTableName);
-    // fetch and cache variables
-    try {
-      Response<List<OpalVariable>> response = service.listVariables(token, getOpalDatasourceName(schemaTableName), getOpalTableName(schemaTableName)).execute();
-      if (!response.isSuccessful())
-        throw new IllegalStateException("Unable to read '" + getOpalTableRef(schemaTableName) + "' variables: " + response.message());
-      List<OpalVariable> variables = response.body();
-      columnNameMap.put(schemaTableName, Maps.newHashMap());
-      for (OpalVariable variable : variables) {
-        String columnNameOrig = variable.getName().toLowerCase(Locale.ENGLISH);
-        String columnName = columnNameOrig;
-        int i = 1;
-        while (columnNameMap.get(schemaTableName).containsKey(columnName)) {
-          columnName = columnNameOrig + "_" + i;
-          i++;
+    synchronized (this) {
+      if (connectorTableMap.containsKey(schemaTableName)) return connectorTableMap.get(schemaTableName);
+      // fetch and cache variables
+      try {
+        Response<List<OpalVariable>> response = service.listVariables(token, getOpalDatasourceName(schemaTableName), getOpalTableName(schemaTableName)).execute();
+        if (!response.isSuccessful())
+          throw new IllegalStateException("Unable to read '" + getOpalTableRef(schemaTableName) + "' variables: " + response.message());
+        List<OpalVariable> variables = response.body();
+        columnNameMap.put(schemaTableName, Maps.newHashMap());
+        for (OpalVariable variable : variables) {
+          String columnNameOrig = normalize(variable.getName());
+          String columnName = columnNameOrig;
+          int i = 1;
+          while (columnNameMap.get(schemaTableName).containsKey(columnName)) {
+            columnName = columnNameOrig + "_" + i;
+            i++;
+          }
+          columnNameMap.get(schemaTableName).put(columnName, variable);
         }
-        columnNameMap.get(schemaTableName).put(columnName, variable);
+        ConnectorTableMetadata connectorTableMetadata = new ConnectorTableMetadata(schemaTableName,
+            variables.stream().map(OpalColumnMetadata::new).collect(Collectors.toList()));
+        connectorTableMap.put(schemaTableName, connectorTableMetadata);
+        return connectorTableMetadata;
+      } catch (IOException e) {
+        throw new RuntimeException(e);
       }
-      ConnectorTableMetadata connectorTableMetadata = new ConnectorTableMetadata(schemaTableName,
-          variables.stream().map(OpalColumnMetadata::new).collect(Collectors.toList()));
-      connectorTableMap.put(schemaTableName, connectorTableMetadata);
-      return connectorTableMetadata;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
     }
   }
 
@@ -127,7 +129,7 @@ public class OpalRest implements Rest {
   /**
    * Fetch opal datasources and associated tables.
    */
-  private void initialize() {
+  private synchronized void initialize() {
     if (datasources != null && !datasources.isEmpty()) return;
     try {
       Response<List<OpalDatasource>> response = service.listDatasources(token).execute();
@@ -137,7 +139,7 @@ public class OpalRest implements Rest {
       // handle possible case conflicts
       opalDatasourceMap.clear();
       for (OpalDatasource datasource : datasources) {
-        String schemaNameOrig = datasource.getName().toLowerCase(Locale.ENGLISH);
+        String schemaNameOrig = normalize(datasource.getName());
         String schemaName = schemaNameOrig;
         int i = 1;
         while (opalDatasourceMap.containsKey(schemaName)) {
@@ -146,10 +148,10 @@ public class OpalRest implements Rest {
         }
         opalDatasourceMap.put(schemaName, datasource);
         for (String tableName : datasource.getTableNames()) {
-          SchemaTableName schemaTableName = new SchemaTableName(schemaName, tableName);
+          SchemaTableName schemaTableName = new SchemaTableName(schemaName, normalize(tableName));
           i = 1;
           while (opalTableNameMap.containsKey(schemaTableName)) {
-            schemaTableName = new SchemaTableName(schemaName, tableName + "_" + i);
+            schemaTableName = new SchemaTableName(schemaName, normalize(tableName) + "_" + i);
             i++;
           }
           opalTableNameMap.put(schemaTableName, tableName);
@@ -174,6 +176,10 @@ public class OpalRest implements Rest {
 
   private String getOpalTableRef(SchemaTableName schemaTableName) {
     return opalDatasourceMap.get(schemaTableName.getSchemaName()).getName() + "." + opalTableNameMap.get(schemaTableName);
+  }
+
+  private String normalize(String name) {
+    return name.toLowerCase(Locale.ENGLISH).replace(' ', '_').replace("(","").replace(")","");
   }
 
 }

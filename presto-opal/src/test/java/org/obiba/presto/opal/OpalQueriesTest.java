@@ -15,10 +15,12 @@
 package org.obiba.presto.opal;
 
 import com.facebook.presto.Session;
+import com.facebook.presto.testing.MaterializedResult;
 import com.facebook.presto.testing.QueryRunner;
 import com.facebook.presto.tests.AbstractTestQueryFramework;
 import com.facebook.presto.tests.DistributedQueryRunner;
 import com.google.common.collect.ImmutableMap;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import static com.facebook.presto.testing.TestingSession.testSessionBuilder;
@@ -56,9 +58,20 @@ public class OpalQueriesTest
   }
 
   @Test
-  public void showTables() {
+  public void showSchemas() {
     assertQuery("SHOW SCHEMAS FROM demo", "VALUES 'cls','clsa','cptp','datashield','fnac','frele','heliad','information_schema','lasa','lbls','nuage','path','ship','ulsam'");
+  }
+
+  @Test
+  public void showTables() {
     assertQuery("SHOW TABLES FROM demo.datashield", "VALUES 'cnsim1','cnsim2','cnsim3'");
+  }
+
+  @Test
+  public void showColumns() {
+    MaterializedResult result = computeActual("SHOW COLUMNS FROM demo.datashield.cnsim1");
+    Assert.assertEquals(result.getRowCount(), 11);
+    // TODO check data types
   }
 
   @Test
@@ -68,7 +81,9 @@ public class OpalQueriesTest
 
   @Test
   public void selectColumnFromDefault() {
-    computeActual("SELECT gender FROM cnsim1");
+    MaterializedResult result = computeActual("SELECT gender FROM cnsim1");
+    // TODO fix expected count
+    Assert.assertEquals(result.getRowCount(), 100);
   }
 
 }
