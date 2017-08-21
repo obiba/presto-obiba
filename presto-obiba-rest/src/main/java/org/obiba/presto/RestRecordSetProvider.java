@@ -49,7 +49,7 @@ public class RestRecordSetProvider
             List<? extends ColumnHandle> list)
     {
         RestConnectorSplit split = Types.checkType(connectorSplit, RestConnectorSplit.class, "split");
-        List<RestColumnHandle> restColumnHandles = list.stream().map(col -> Types.checkType(col, RestColumnHandle.class, "column handle")).collect(toList());
+        List<RestColumnHandle> restColumnHandles = list.stream().map(col -> Types.checkType(col, RestColumnHandle.class, "columnHandle")).collect(toList());
 
         SchemaTableName schemaTableName = split.getTableHandle().getSchemaTableName();
         Collection<? extends List<?>> rows = rest.getRows(schemaTableName, restColumnHandles, split.getTupleDomain());

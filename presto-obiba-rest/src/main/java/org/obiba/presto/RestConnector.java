@@ -55,20 +55,9 @@ public class RestConnector
     }
 
     @Override
-    public ConnectorRecordSinkProvider getRecordSinkProvider()
-    {
-        return new RestRecordSinkProvider(rest);
-    }
-
-    @Override
     public ConnectorPageSourceProvider getPageSourceProvider() {
         if (!rest.supportsPaging()) throw new UnsupportedOperationException();
         return new RestPageSourceProvider(rest);
     }
 
-    @Override
-    public ConnectorPageSinkProvider getPageSinkProvider() {
-        if (!rest.supportsPaging()) throw new UnsupportedOperationException();
-        return null;
-    }
 }

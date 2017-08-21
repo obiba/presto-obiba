@@ -34,7 +34,7 @@ public class RestPageSourceProvider implements ConnectorPageSourceProvider {
   @Override
   public ConnectorPageSource createPageSource(ConnectorTransactionHandle transactionHandle, ConnectorSession session, ConnectorSplit connectorSplit, List<ColumnHandle> columns) {
     RestConnectorSplit split = Types.checkType(connectorSplit, RestConnectorSplit.class, "split");
-    List<RestColumnHandle> restColumnHandles = columns.stream().map(col -> Types.checkType(col, RestColumnHandle.class, "column handle")).collect(Collectors.toList());
+    List<RestColumnHandle> restColumnHandles = columns.stream().map(col -> Types.checkType(col, RestColumnHandle.class, "columnHandle")).collect(Collectors.toList());
 
     return new RestPageSource(rest, split, restColumnHandles);
   }
