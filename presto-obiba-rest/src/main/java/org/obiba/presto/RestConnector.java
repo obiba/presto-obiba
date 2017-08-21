@@ -15,12 +15,7 @@
 package org.obiba.presto;
 
 import com.facebook.presto.spi.NodeManager;
-import com.facebook.presto.spi.connector.Connector;
-import com.facebook.presto.spi.connector.ConnectorMetadata;
-import com.facebook.presto.spi.connector.ConnectorRecordSetProvider;
-import com.facebook.presto.spi.connector.ConnectorRecordSinkProvider;
-import com.facebook.presto.spi.connector.ConnectorSplitManager;
-import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
+import com.facebook.presto.spi.connector.*;
 import com.facebook.presto.spi.transaction.IsolationLevel;
 
 public class RestConnector
@@ -63,5 +58,17 @@ public class RestConnector
     public ConnectorRecordSinkProvider getRecordSinkProvider()
     {
         return new RestRecordSinkProvider(rest);
+    }
+
+    @Override
+    public ConnectorPageSourceProvider getPageSourceProvider() {
+        if (!rest.supportsPaging()) throw new UnsupportedOperationException();
+        return new RestPageSourceProvider(rest);
+    }
+
+    @Override
+    public ConnectorPageSinkProvider getPageSinkProvider() {
+        if (!rest.supportsPaging()) throw new UnsupportedOperationException();
+        return null;
     }
 }

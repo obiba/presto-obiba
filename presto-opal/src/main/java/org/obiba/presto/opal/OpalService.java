@@ -19,10 +19,7 @@ import org.obiba.presto.opal.model.OpalTable;
 import org.obiba.presto.opal.model.OpalValueSets;
 import org.obiba.presto.opal.model.OpalVariable;
 import retrofit2.Call;
-import retrofit2.http.GET;
-import retrofit2.http.Header;
-import retrofit2.http.Headers;
-import retrofit2.http.Path;
+import retrofit2.http.*;
 
 import java.util.List;
 
@@ -54,6 +51,6 @@ public interface OpalService {
 
   @Headers({"Accept: application/json"})
   @GET("/ws/datasource/{ds}/table/{name}/valueSets")
-  Call<OpalValueSets> listValueSets(@Header("Authorization") String opalAuth, @Path("ds") String datasource, @Path("name") String name);
+  Call<OpalValueSets> listValueSets(@Header("Authorization") String opalAuth, @Path("ds") String datasource, @Path("name") String name, @Query("offset") int offset, @Query("limit") int limit);
 
 }

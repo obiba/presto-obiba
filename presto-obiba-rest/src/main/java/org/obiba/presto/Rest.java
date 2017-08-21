@@ -14,10 +14,8 @@
 
 package org.obiba.presto;
 
-import com.facebook.presto.spi.ColumnMetadata;
-import com.facebook.presto.spi.ConnectorTableHandle;
-import com.facebook.presto.spi.ConnectorTableMetadata;
-import com.facebook.presto.spi.SchemaTableName;
+import com.facebook.presto.spi.*;
+import com.facebook.presto.spi.predicate.TupleDomain;
 import com.facebook.presto.spi.type.Type;
 
 import java.util.Collection;
@@ -41,7 +39,7 @@ public interface Rest
 
     List<SchemaTableName> listTables(String schema);
 
-    Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles);
+    Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles, TupleDomain<ColumnHandle> tupleDomain);
 
     Consumer<List> createRowSink(SchemaTableName schemaTableName);
 
@@ -51,4 +49,6 @@ public interface Rest
                 .map(ColumnMetadata::getType)
                 .collect(toList());
     }
+
+    default boolean supportsPaging() { return false; }
 }

@@ -49,6 +49,6 @@ public class RestSplitManager
                 .collect(toList());
 
         return new FixedSplitSource(ImmutableList.of(
-                new RestConnectorSplit(layoutHandle.getTableHandle(), addresses)));
+                new RestConnectorSplit(layoutHandle.getTableHandle(), layoutHandle.getTupleDomain(), addresses)));
     }
 }

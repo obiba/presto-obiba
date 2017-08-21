@@ -14,8 +14,10 @@
 
 package org.obiba.presto;
 
+import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.HostAddress;
+import com.facebook.presto.spi.predicate.TupleDomain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -25,14 +27,17 @@ public class RestConnectorSplit
         implements ConnectorSplit
 {
     private final RestTableHandle tableHandle;
+    private final TupleDomain<ColumnHandle> tupleDomain;
     private final List<HostAddress> addresses;
 
     @JsonCreator
     public RestConnectorSplit(
             @JsonProperty("tableHandle") RestTableHandle tableHandle,
+            @JsonProperty("tupleDomain") TupleDomain<ColumnHandle> tupleDomain,
             @JsonProperty("addresses") List<HostAddress> addresses)
     {
         this.tableHandle = tableHandle;
+        this.tupleDomain = tupleDomain;
         this.addresses = addresses;
     }
 
@@ -40,6 +45,12 @@ public class RestConnectorSplit
     public boolean isRemotelyAccessible()
     {
         return true;
+    }
+
+    @JsonProperty
+    public TupleDomain<ColumnHandle> getTupleDomain()
+    {
+        return tupleDomain;
     }
 
     @Override
@@ -52,7 +63,7 @@ public class RestConnectorSplit
     @Override
     public Object getInfo()
     {
-        return "Slack split";
+        return "OBiBa split";
     }
 
     @JsonProperty("tableHandle")

@@ -82,9 +82,8 @@ public class OpalQueriesTest
 
   @Test
   public void selectColumnFromDefault() {
-    MaterializedResult result = computeActual("SELECT gender FROM cnsim1");
-    // TODO fix expected count
-    Assert.assertEquals(result.getRowCount(), 100);
+    MaterializedResult result = computeActual("SELECT gender FROM cnsim1 WHERE gender = '1' LIMIT 10");
+    Assert.assertEquals(result.getRowCount(), 10);
   }
 
 }

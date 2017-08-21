@@ -14,10 +14,13 @@
 
 package org.obiba.presto.opal;
 
+import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.SchemaTableName;
+import com.facebook.presto.spi.predicate.TupleDomain;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.obiba.presto.Rest;
 import org.obiba.presto.RestColumnHandle;
@@ -36,6 +39,9 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 
 public class OpalRest implements Rest {
+
+  private static final int BATCH_SIZE = 10000;
+
   private final String opalUrl;
   private final String token;
   private final OpalService service;
@@ -108,14 +114,23 @@ public class OpalRest implements Rest {
   }
 
   @Override
-  public Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles) {
+  public Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles, TupleDomain<ColumnHandle> tupleDomain) {
     initialize();
     try {
-      Response<OpalValueSets> execute = service.listValueSets(token, getOpalDatasourceName(schemaTableName), getOpalTableName(schemaTableName)).execute();
-      if (!execute.isSuccessful())
-        throw new IllegalStateException("Unable to read '" + getOpalTableRef(schemaTableName) + "' values: " + execute.message());
-      OpalValueSets valueSets = execute.body();
-      return valueSets.getStringValues(restColumnHandles.stream().map(col -> getOpalVariable(schemaTableName, col)).collect(toList()));
+      List<List<String>> result = Lists.newArrayList();
+      int offset = 0;
+      Collection<List<String>> batchResult = null;
+      while (batchResult == null || batchResult.size() == BATCH_SIZE) {
+        // TODO use the tuple domain constraints
+        Response<OpalValueSets> execute = service.listValueSets(token, getOpalDatasourceName(schemaTableName), getOpalTableName(schemaTableName), offset, BATCH_SIZE).execute();
+        if (!execute.isSuccessful())
+          throw new IllegalStateException("Unable to read '" + getOpalTableRef(schemaTableName) + "' values: " + execute.message());
+        OpalValueSets valueSets = execute.body();
+        batchResult = valueSets.getStringValues(restColumnHandles.stream().map(col -> getOpalVariable(schemaTableName, col)).collect(toList()));
+        result.addAll(batchResult);
+        offset = offset + BATCH_SIZE;
+      }
+      return result;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -179,7 +194,7 @@ public class OpalRest implements Rest {
   }
 
   private String normalize(String name) {
-    return name.toLowerCase(Locale.ENGLISH).replace(' ', '_').replace("(","").replace(")","");
+    return name.toLowerCase(Locale.ENGLISH).replace(' ', '_').replace("(", "").replace(")", "");
   }
 
 }

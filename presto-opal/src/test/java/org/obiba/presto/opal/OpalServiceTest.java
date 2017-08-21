@@ -41,7 +41,6 @@ public class OpalServiceTest {
         .create(OpalService.class);
   }
 
-
   @Test
   public void listDatasources() throws IOException {
     Response<List<OpalDatasource>> response = service.listDatasources(getOpalAuth()).execute();

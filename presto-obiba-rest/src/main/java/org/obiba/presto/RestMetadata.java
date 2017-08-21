@@ -68,8 +68,8 @@ public class RestMetadata
         RestTableHandle tableHandle = Types.checkType(connectorTableHandle, RestTableHandle.class, "tableHandle");
         return ImmutableList.of(
                 new ConnectorTableLayoutResult(
-                        getTableLayout(connectorSession, new RestConnectorTableLayoutHandle(tableHandle)),
-                        TupleDomain.all()));
+                        getTableLayout(connectorSession, new RestConnectorTableLayoutHandle(tableHandle, constraint.getSummary())),
+                        constraint.getSummary()));
     }
 
     @Override

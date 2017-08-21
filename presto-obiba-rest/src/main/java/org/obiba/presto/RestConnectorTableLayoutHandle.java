@@ -14,25 +14,55 @@
 
 package org.obiba.presto;
 
+import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ConnectorTableLayoutHandle;
+import com.facebook.presto.spi.predicate.TupleDomain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Objects;
+
 public class RestConnectorTableLayoutHandle
-        implements ConnectorTableLayoutHandle
-{
-    private final RestTableHandle tableHandle;
+    implements ConnectorTableLayoutHandle {
+  private final RestTableHandle tableHandle;
+  private final TupleDomain<ColumnHandle> tupleDomain;
 
-    @JsonCreator
-    public RestConnectorTableLayoutHandle(
-            @JsonProperty("tableHandle") RestTableHandle tableHandle)
-    {
-        this.tableHandle = tableHandle;
-    }
+  @JsonCreator
+  public RestConnectorTableLayoutHandle(@JsonProperty("tableHandle") RestTableHandle tableHandle,
+                                        @JsonProperty("tupleDomain") TupleDomain<ColumnHandle> tupleDomain) {
+    this.tableHandle = tableHandle;
+    this.tupleDomain = tupleDomain;
+  }
 
-    @JsonProperty("tableHandle")
-    public RestTableHandle getTableHandle()
-    {
-        return tableHandle;
+  @JsonProperty("tableHandle")
+  public RestTableHandle getTableHandle() {
+    return tableHandle;
+  }
+
+  @JsonProperty
+  public TupleDomain<ColumnHandle> getTupleDomain()
+  {
+    return tupleDomain;
+  }
+
+
+  @Override
+  public boolean equals(Object o)
+  {
+    if (this == o) {
+      return true;
     }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    RestConnectorTableLayoutHandle that = (RestConnectorTableLayoutHandle) o;
+    return Objects.equals(tableHandle, that.tableHandle) &&
+        Objects.equals(tupleDomain, that.tupleDomain);
+  }
+
+  @Override
+  public int hashCode()
+  {
+    return Objects.hash(tableHandle, tupleDomain);
+  }
 }
