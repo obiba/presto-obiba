@@ -45,13 +45,14 @@ public class OpalValueSet {
 
   public List<String> getStringValues() {
     return values.stream().map(v -> v.containsKey("values") ?
-        asString(v.getOrDefault("values", "")): asString(v.getOrDefault("value", "")))
+        asString(v.get("values")): asString(v.get("value")))
         .collect(Collectors.toList());
   }
 
   public List<String> getStringValues(List<Integer> positions) {
     return positions.stream().map(pos -> {
-      if (pos<0 || pos>=values.size()) return "";
+      if (pos<0) return identifier;
+      if (pos>=values.size()) return "";
       Map<String, Object> valueMap = values.get(pos);
       if (valueMap.containsKey("value")) return asString(valueMap.get("value"));
       else if (valueMap.containsKey("values")) return asString(valueMap.get("values"));
@@ -64,7 +65,9 @@ public class OpalValueSet {
   }
 
   private String asString(Object obj) {
-    if (obj == null) return "";
+    if (obj == null){
+      return null;
+    }
     if (obj instanceof Collection)
       return ((Collection<?>)obj).stream().map(o -> asString(((Map<String, Object>)o).get("value"))).collect(Collectors.joining(","));
     return obj.toString();

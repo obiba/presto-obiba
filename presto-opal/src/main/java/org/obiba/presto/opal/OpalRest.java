@@ -14,6 +14,7 @@
 
 package org.obiba.presto.opal;
 
+import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.SchemaTableName;
 import com.google.common.collect.ImmutableList;
@@ -64,34 +65,33 @@ public class OpalRest implements Rest {
   }
 
   @Override
-  public ConnectorTableMetadata getTableMetadata(SchemaTableName schemaTableName) {
+  public synchronized ConnectorTableMetadata getTableMetadata(SchemaTableName schemaTableName) {
     initialize();
-    synchronized (this) {
-      if (connectorTableMap.containsKey(schemaTableName)) return connectorTableMap.get(schemaTableName);
-      // fetch and cache variables
-      try {
-        Response<List<OpalVariable>> response = service.listVariables(token, getOpalDatasourceName(schemaTableName), getOpalTableName(schemaTableName)).execute();
-        if (!response.isSuccessful())
-          throw new IllegalStateException("Unable to read '" + getOpalTableRef(schemaTableName) + "' variables: " + response.message());
-        List<OpalVariable> variables = response.body();
-        columnNameMap.put(schemaTableName, Maps.newHashMap());
-        for (OpalVariable variable : variables) {
-          String columnNameOrig = normalize(variable.getName());
-          String columnName = columnNameOrig;
-          int i = 1;
-          while (columnNameMap.get(schemaTableName).containsKey(columnName)) {
-            columnName = columnNameOrig + "_" + i;
-            i++;
-          }
-          columnNameMap.get(schemaTableName).put(columnName, variable);
+    if (connectorTableMap.containsKey(schemaTableName)) return connectorTableMap.get(schemaTableName);
+    // fetch and cache variables
+    try {
+      Response<List<OpalVariable>> response = service.listVariables(token, getOpalDatasourceName(schemaTableName), getOpalTableName(schemaTableName)).execute();
+      if (!response.isSuccessful())
+        throw new IllegalStateException("Unable to read '" + getOpalTableRef(schemaTableName) + "' variables: " + response.message());
+      List<OpalVariable> variables = response.body();
+      columnNameMap.put(schemaTableName, Maps.newHashMap());
+      for (OpalVariable variable : variables) {
+        String columnNameOrig = normalize(variable.getName());
+        String columnName = columnNameOrig;
+        int i = 1;
+        while (columnNameMap.get(schemaTableName).containsKey(columnName)) {
+          columnName = columnNameOrig + "_" + i;
+          i++;
         }
-        ConnectorTableMetadata connectorTableMetadata = new ConnectorTableMetadata(schemaTableName,
-            variables.stream().map(OpalColumnMetadata::new).collect(Collectors.toList()));
-        connectorTableMap.put(schemaTableName, connectorTableMetadata);
-        return connectorTableMetadata;
-      } catch (IOException e) {
-        throw new RuntimeException(e);
+        columnNameMap.get(schemaTableName).put(columnName, variable);
       }
+      List<ColumnMetadata> columns = variables.stream().map(OpalColumnMetadata::new).collect(Collectors.toList());
+      columns.add(0, new OpalIDColumnMetadata());
+      ConnectorTableMetadata connectorTableMetadata = new ConnectorTableMetadata(schemaTableName, columns);
+      connectorTableMap.put(schemaTableName, connectorTableMetadata);
+      return connectorTableMetadata;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
