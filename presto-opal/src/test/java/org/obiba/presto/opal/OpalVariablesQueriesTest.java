@@ -72,7 +72,7 @@ public class OpalVariablesQueriesTest
   public void showColumns() {
     MaterializedResult result = computeActual("SHOW COLUMNS FROM demo.datashield.cnsim1");
     // variables properties
-    Assert.assertEquals(result.getRowCount(), 12);
+    Assert.assertEquals(result.getRowCount(), 36);
     // TODO check data types
   }
 

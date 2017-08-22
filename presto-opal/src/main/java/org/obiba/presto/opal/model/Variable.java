@@ -31,6 +31,7 @@ public class Variable {
   private final String unit;
   private final int index;
   private final List<Category> categories;
+  private final List<Attribute> attributes;
 
   public Variable(@JsonProperty("name") String name,
                   @JsonProperty("entityType") String entityType,
@@ -41,7 +42,8 @@ public class Variable {
                   @JsonProperty("referencedEntityType") String referencedEntityType,
                   @JsonProperty("unit") String unit,
                   @JsonProperty("index") int index,
-                  @JsonProperty("categories") List<Category> categories) {
+                  @JsonProperty("categories") List<Category> categories,
+                  @JsonProperty("attributes") List<Attribute> attributes) {
     this.name = name;
     this.entityType = entityType;
     this.valueType = valueType;
@@ -52,6 +54,7 @@ public class Variable {
     this.unit = unit;
     this.index = index;
     this.categories = categories;
+    this.attributes = attributes;
   }
 
   public String getName() {
@@ -96,5 +99,18 @@ public class Variable {
 
   public List<Category> getCategories() {
     return categories;
+  }
+
+  public boolean hasAttributes() {
+    return attributes != null && !attributes.isEmpty();
+  }
+
+  public List<Attribute> getAttributes() {
+    return attributes;
+  }
+
+  public String getAttributeValue(String namespace, String name, String locale) {
+    if (!hasAttributes()) return null;
+    return attributes.stream().filter(attr -> attr.isFor(namespace, name, locale)).map(Attribute::getValue).findFirst().orElse(null);
   }
 }

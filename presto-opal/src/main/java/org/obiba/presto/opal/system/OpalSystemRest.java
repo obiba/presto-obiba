@@ -120,22 +120,21 @@ public class OpalSystemRest extends OpalRest {
   private Collection<? extends List<?>> getVocabularyRows(List<String> columnNames, TupleDomain<ColumnHandle> tupleDomain, List<Taxonomy> taxonomies) {
     Collection<List<?>> rows = Lists.newArrayList();
     taxonomies.forEach(taxo -> {
-      if (taxo.hasVocabularies())
-        taxo.getVocabularies().forEach(voc -> {
-          List<Object> row = Lists.newArrayList();
-          for (String colName : columnNames) {
-            if ("name".equals(colName)) row.add(voc.getName());
-            else if ("taxonomy".equals(colName)) row.add(taxo.getName());
-            else if (colName.startsWith("title:"))
-              row.add(findText(voc.getTitle(), extractLocale(colName)));
-            else if (colName.startsWith("description:"))
-              row.add(findText(voc.getDescription(), extractLocale(colName)));
-            else if (colName.startsWith("keywords:"))
-              row.add(findText(voc.getKeywords(), extractLocale(colName)));
-            else row.add(null); // TODO parse attribute
-          }
-          rows.add(row);
-        });
+      taxo.getVocabularies().forEach(voc -> {
+        List<Object> row = Lists.newArrayList();
+        for (String colName : columnNames) {
+          if ("name".equals(colName)) row.add(voc.getName());
+          else if ("taxonomy".equals(colName)) row.add(taxo.getName());
+          else if (colName.startsWith("title:"))
+            row.add(findText(voc.getTitle(), extractLocale(colName)));
+          else if (colName.startsWith("description:"))
+            row.add(findText(voc.getDescription(), extractLocale(colName)));
+          else if (colName.startsWith("keywords:"))
+            row.add(findText(voc.getKeywords(), extractLocale(colName)));
+          else row.add(null); // TODO parse attribute
+        }
+        rows.add(row);
+      });
     });
     return rows;
   }
@@ -143,30 +142,28 @@ public class OpalSystemRest extends OpalRest {
   private Collection<? extends List<?>> getTermRows(List<String> columnNames, TupleDomain<ColumnHandle> tupleDomain, List<Taxonomy> taxonomies) {
     Collection<List<?>> rows = Lists.newArrayList();
     taxonomies.forEach(taxo -> {
-      if (taxo.hasVocabularies())
-        taxo.getVocabularies().forEach(voc -> {
-          if (voc.hasTerms())
-            voc.getTerms().forEach(term -> {
-              List<Object> row = Lists.newArrayList();
-              for (String colName : columnNames) {
-                if ("name".equals(colName)) row.add(term.getName());
-                else if ("taxonomy".equals(colName)) row.add(taxo.getName());
-                else if ("vocabulary".equals(colName)) row.add(voc.getName());
-                else if (colName.startsWith("title:"))
-                  row.add(findText(term.getTitle(), extractLocale(colName)));
-                else if (colName.startsWith("description:"))
-                  row.add(findText(term.getDescription(), extractLocale(colName)));
-                else if (colName.startsWith("keywords:"))
-                  row.add(findText(term.getKeywords(), extractLocale(colName)));
-                else row.add(null); // TODO parse attribute
-              }
-              rows.add(row);
-            });
+      taxo.getVocabularies().forEach(voc -> {
+        voc.getTerms().forEach(term -> {
+          List<Object> row = Lists.newArrayList();
+          for (String colName : columnNames) {
+            if ("name".equals(colName)) row.add(term.getName());
+            else if ("taxonomy".equals(colName)) row.add(taxo.getName());
+            else if ("vocabulary".equals(colName)) row.add(voc.getName());
+            else if (colName.startsWith("title:"))
+              row.add(findText(term.getTitle(), extractLocale(colName)));
+            else if (colName.startsWith("description:"))
+              row.add(findText(term.getDescription(), extractLocale(colName)));
+            else if (colName.startsWith("keywords:"))
+              row.add(findText(term.getKeywords(), extractLocale(colName)));
+            else row.add(null); // TODO parse attribute
+          }
+          rows.add(row);
         });
+      });
     });
     return rows;
   }
-  
+
   private String extractLocale(String columnName) {
     return Splitter.on(":").splitToList(columnName).get(1);
   }

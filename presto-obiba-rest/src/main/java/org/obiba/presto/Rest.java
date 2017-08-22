@@ -42,6 +42,15 @@ public interface Rest
 
     Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles, TupleDomain<ColumnHandle> tupleDomain);
 
+    default RecordSet getRecordSet(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles, TupleDomain<ColumnHandle> tupleDomain)
+    {
+        Collection<? extends List<?>> rows = getRows(schemaTableName, restColumnHandles, tupleDomain);
+        List<Type> mappedTypes = restColumnHandles.stream()
+            .map(RestColumnHandle::getType)
+            .collect(toList());
+        return new InMemoryRecordSet(mappedTypes, rows);
+    }
+
     default List<Type> getTypes(SchemaTableName schemaTableName)
     {
         return getTableMetadata(schemaTableName).getColumns().stream()

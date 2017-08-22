@@ -22,12 +22,14 @@ import com.facebook.presto.spi.predicate.TupleDomain;
 import com.facebook.presto.spi.type.BooleanType;
 import com.facebook.presto.spi.type.IntegerType;
 import com.facebook.presto.spi.type.VarcharType;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.obiba.presto.RestColumnHandle;
 import org.obiba.presto.opal.OpalDatasourcesRest;
 import org.obiba.presto.opal.model.Category;
+import org.obiba.presto.opal.model.Taxonomy;
 import org.obiba.presto.opal.model.Variable;
 import retrofit2.Response;
 
@@ -39,8 +41,13 @@ import java.util.stream.Collectors;
 
 public class OpalVariablesRest extends OpalDatasourcesRest {
 
+  private List<Taxonomy> taxonomies;
+
   // schema table name vs. columns
   private Map<SchemaTableName, ConnectorTableMetadata> connectorTableMap = Maps.newHashMap();
+
+  // column name vs. taxonomy-vocabulary tuple
+  private Map<String, String[]> vocabularyMap;
 
   public OpalVariablesRest(String url, String username, String password) {
     super(url, username, password);
@@ -61,14 +68,13 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
         .add(new ColumnMetadata("unit", VarcharType.createUnboundedVarcharType()))
         .add(new ColumnMetadata("index", IntegerType.INTEGER))
         .add(new ColumnMetadata("categories", VarcharType.createUnboundedVarcharType()));
-    // TODO add taxonomy based attributes
-    // TODO add script attribute
-    // TODO add categories
+    builder.add(new ColumnMetadata("script", VarcharType.createUnboundedVarcharType()));
     for (String text : new String[]{"label", "description"}) {
       for (String language : opalConf.getLanguages()) {
-        builder.add(new ColumnMetadata(text +":" + language, VarcharType.createUnboundedVarcharType()));
+        builder.add(new ColumnMetadata(text + ":" + language, VarcharType.createUnboundedVarcharType()));
       }
     }
+    getVocabularyColumnNames().forEach(vocAttr -> builder.add(new ColumnMetadata(vocAttr, VarcharType.createUnboundedVarcharType())));
     ConnectorTableMetadata connectorTableMetadata = new ConnectorTableMetadata(schemaTableName, builder.build());
     connectorTableMap.put(schemaTableName, connectorTableMetadata);
     return connectorTableMetadata;
@@ -97,10 +103,50 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
           else if ("index".equals(colName)) builder.add(v.getIndex());
           else if ("categories".equals(colName)) builder.add(v.hasCategories() ?
               v.getCategories().stream().map(Category::getName).collect(Collectors.joining(",")) : null);
+          else if ("script".equals(colName))
+            builder.add(v.getAttributeValue(null, "script", null));
+          else if (colName.startsWith("label:"))
+            builder.add(v.getAttributeValue(null, "label", extractLocale(colName)));
+          else if (colName.startsWith("description:"))
+            builder.add(v.getAttributeValue(null, "description", extractLocale(colName)));
+          else if (vocabularyMap.containsKey(colName))
+            builder.add(v.getAttributeValue(vocabularyMap.get(colName)[0],vocabularyMap.get(colName)[1], null));
           else builder.add(null); // TODO parse attribute
         }
         return builder;
       }).collect(Collectors.toList());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private String extractLocale(String columnName) {
+    List<String> tokens = Splitter.on(":").splitToList(columnName);
+    return tokens.get(tokens.size() - 1);
+  }
+
+  @Override
+  protected synchronized void initialize() {
+    super.initialize();
+    initializeTaxonomies();
+  }
+
+  private List<String> getVocabularyColumnNames() {
+    if (vocabularyMap == null) return Lists.newArrayList();
+    return Lists.newArrayList(vocabularyMap.keySet());
+  }
+
+  private void initializeTaxonomies() {
+    if (taxonomies != null && !taxonomies.isEmpty()) return;
+    try {
+      Response<List<Taxonomy>> response = service.listTaxonomies(token).execute();
+      if (!response.isSuccessful())
+        throw new IllegalStateException("Unable to read opal taxonomies: " + response.message());
+      taxonomies = response.body();
+      // Vocabulary names in the form of attribute header: namespace::name.
+      vocabularyMap = Maps.newHashMap();
+      taxonomies.forEach(taxo -> taxo.getVocabularies()
+          .forEach(voc -> vocabularyMap.put(normalize(taxo.getName() + "::" + voc.getName()), new String[] {taxo.getName(), voc.getName()})));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

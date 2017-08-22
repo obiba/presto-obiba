@@ -16,6 +16,7 @@ package org.obiba.presto.opal.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Lists;
 
 import java.util.List;
 
@@ -63,11 +64,7 @@ public class Vocabulary {
     return keywords;
   }
 
-  public boolean hasTerms() {
-    return terms != null && !terms.isEmpty();
-  }
-
   public List<Term> getTerms() {
-    return terms;
+    return terms == null ? Lists.newArrayList() : terms;
   }
 }

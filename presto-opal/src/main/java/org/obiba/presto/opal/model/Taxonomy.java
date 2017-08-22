@@ -16,6 +16,7 @@ package org.obiba.presto.opal.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Lists;
 
 import java.util.List;
 
@@ -70,11 +71,7 @@ public class Taxonomy {
     return keywords;
   }
 
-  public boolean hasVocabularies() {
-    return vocabularies != null && !vocabularies.isEmpty();
-  }
-
   public List<Vocabulary> getVocabularies() {
-    return vocabularies;
+    return vocabularies == null ? Lists.newArrayList() : vocabularies;
   }
 }

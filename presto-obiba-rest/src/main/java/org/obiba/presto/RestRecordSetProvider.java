@@ -52,10 +52,6 @@ public class RestRecordSetProvider
         List<RestColumnHandle> restColumnHandles = list.stream().map(col -> Types.checkType(col, RestColumnHandle.class, "columnHandle")).collect(toList());
 
         SchemaTableName schemaTableName = split.getTableHandle().getSchemaTableName();
-        Collection<? extends List<?>> rows = rest.getRows(schemaTableName, restColumnHandles, split.getTupleDomain());
-        List<Type> mappedTypes = restColumnHandles.stream()
-                .map(RestColumnHandle::getType)
-                .collect(toList());
-        return new InMemoryRecordSet(mappedTypes, rows);
+        return rest.getRecordSet(schemaTableName, restColumnHandles, split.getTupleDomain());
     }
 }
