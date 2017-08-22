@@ -15,9 +15,12 @@
 package org.obiba.presto.opal;
 
 import org.obiba.presto.Rest;
+import org.obiba.presto.opal.model.OpalConf;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
+import java.io.IOException;
 import java.util.Base64;
 
 public abstract class OpalRest implements Rest {
@@ -25,6 +28,7 @@ public abstract class OpalRest implements Rest {
   private final String opalUrl;
   protected final String token;
   protected final OpalService service;
+  protected OpalConf opalConf;
 
   public OpalRest(String url, String username, String password) {
     this.opalUrl = url;
@@ -37,5 +41,20 @@ public abstract class OpalRest implements Rest {
         .create(OpalService.class);
   }
 
+  protected synchronized void initialize() {
+    initializeOpalConf();
+  }
+
+  private void initializeOpalConf() {
+    if (opalConf != null) return;
+    try {
+      Response<OpalConf> response = service.getOpalConf(token).execute();
+      if (!response.isSuccessful())
+        throw new IllegalStateException("Unable to read opal datasources: " + response.message());
+      opalConf = response.body();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
 }

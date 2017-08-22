@@ -14,10 +14,7 @@
 
 package org.obiba.presto.opal;
 
-import org.obiba.presto.opal.model.OpalDatasource;
-import org.obiba.presto.opal.model.OpalTable;
-import org.obiba.presto.opal.model.OpalValueSets;
-import org.obiba.presto.opal.model.OpalVariable;
+import org.obiba.presto.opal.model.*;
 import retrofit2.Call;
 import retrofit2.http.*;
 
@@ -25,32 +22,44 @@ import java.util.List;
 
 public interface OpalService {
 
+  // magma
+
   @Headers({"Accept: application/json"})
   @GET("/ws/datasources")
-  Call<List<OpalDatasource>> listDatasources(@Header("Authorization") String opalAuth);
+  Call<List<Datasource>> listDatasources(@Header("Authorization") String opalAuth);
 
   @Headers({"Accept: application/json"})
   @GET("/ws/datasource/{name}")
-  Call<OpalDatasource> getDatasource(@Header("Authorization") String opalAuth, @Path("name") String name);
+  Call<Datasource> getDatasource(@Header("Authorization") String opalAuth, @Path("name") String name);
 
   @Headers({"Accept: application/json"})
   @GET("/ws/datasource/{name}/tables")
-  Call<List<OpalTable>> listTables(@Header("Authorization") String opalAuth, @Path("name") String name);
+  Call<List<ValueTable>> listTables(@Header("Authorization") String opalAuth, @Path("name") String name);
 
   @Headers({"Accept: application/json"})
   @GET("/ws/datasource/{ds}/table/{name}")
-  Call<OpalTable> getTable(@Header("Authorization") String opalAuth, @Path("ds") String datasource, @Path("name") String name);
+  Call<ValueTable> getTable(@Header("Authorization") String opalAuth, @Path("ds") String datasource, @Path("name") String name);
 
   @Headers({"Accept: application/json"})
   @GET("/ws/datasource/{ds}/table/{name}/variables")
-  Call<List<OpalVariable>> listVariables(@Header("Authorization") String opalAuth, @Path("ds") String datasource, @Path("name") String name);
+  Call<List<Variable>> listVariables(@Header("Authorization") String opalAuth, @Path("ds") String datasource, @Path("name") String name);
 
   @Headers({"Accept: application/json"})
   @GET("/ws/datasource/{ds}/table/{tbl}/variable/{name}")
-  Call<OpalVariable> getVariable(@Header("Authorization") String opalAuth, @Path("ds") String datasource, @Path("tbl") String table, @Path("name") String name);
+  Call<Variable> getVariable(@Header("Authorization") String opalAuth, @Path("ds") String datasource, @Path("tbl") String table, @Path("name") String name);
 
   @Headers({"Accept: application/json"})
   @GET("/ws/datasource/{ds}/table/{name}/valueSets")
-  Call<OpalValueSets> listValueSets(@Header("Authorization") String opalAuth, @Path("ds") String datasource, @Path("name") String name, @Query("offset") int offset, @Query("limit") int limit);
+  Call<ValueSets> listValueSets(@Header("Authorization") String opalAuth, @Path("ds") String datasource, @Path("name") String name, @Query("offset") int offset, @Query("limit") int limit);
+
+  // system
+
+  @Headers({"Accept: application/json"})
+  @GET("/ws/system/conf/general")
+  Call<OpalConf> getOpalConf(@Header("Authorization") String opalAuth);
+
+  @Headers({"Accept: application/json"})
+  @GET("/ws/system/conf/taxonomies")
+  Call<List<Taxonomy>> listTaxonomies(@Header("Authorization") String opalAuth);
 
 }

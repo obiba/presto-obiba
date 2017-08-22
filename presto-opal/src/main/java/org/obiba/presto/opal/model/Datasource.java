@@ -21,16 +21,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OpalDatasource {
+public class Datasource {
   private final String name;
   private final List<String> tableNames;
   private final String type;
   private final Timestamps timestamps;
 
-  public OpalDatasource(@JsonProperty("name") String name,
-                        @JsonProperty("table") List<String> tableNames,
-                        @JsonProperty("type") String type,
-                        @JsonProperty("timestamps") Timestamps timestamps) {
+  public Datasource(@JsonProperty("name") String name,
+                    @JsonProperty("table") List<String> tableNames,
+                    @JsonProperty("type") String type,
+                    @JsonProperty("timestamps") Timestamps timestamps) {
     this.name = name;
     this.tableNames = tableNames;
     this.type = type;

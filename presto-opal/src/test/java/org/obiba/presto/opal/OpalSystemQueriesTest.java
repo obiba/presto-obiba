@@ -25,9 +25,9 @@ import org.testng.annotations.Test;
 
 import static com.facebook.presto.testing.TestingSession.testSessionBuilder;
 
-public class OpalVariablesQueriesTest
+public class OpalSystemQueriesTest
     extends AbstractTestQueryFramework {
-  protected OpalVariablesQueriesTest()
+  protected OpalSystemQueriesTest()
       throws Exception {
     super(createLocalQueryRunner());
   }
@@ -36,7 +36,7 @@ public class OpalVariablesQueriesTest
       throws Exception {
     Session defaultSession = testSessionBuilder()
         .setCatalog("demo")
-        .setSchema("datashield")
+        .setSchema("taxonomies")
         .build();
 
     QueryRunner queryRunner = new DistributedQueryRunner(defaultSession, 1);
@@ -46,7 +46,7 @@ public class OpalVariablesQueriesTest
         "demo",
         "opal",
         ImmutableMap.of("opal.url", "https://opal-demo.obiba.org/",
-            "opal.catalog-type", "variables",
+            "opal.catalog-type", "system",
             "opal.username", "administrator",
             "opal.password", "password"));
 
@@ -60,30 +60,29 @@ public class OpalVariablesQueriesTest
 
   @Test
   public void showSchemas() {
-    assertQuery("SHOW SCHEMAS FROM demo", "VALUES 'cls','clsa','cptp','datashield','fnac','frele','heliad','information_schema','lasa','lbls','nuage','path','ship','ulsam'");
+    assertQuery("SHOW SCHEMAS FROM demo", "VALUES 'taxonomies','information_schema'");
   }
 
   @Test
   public void showTables() {
-    assertQuery("SHOW TABLES FROM demo.datashield", "VALUES 'cnsim1','cnsim2','cnsim3'");
+    assertQuery("SHOW TABLES FROM demo.taxonomies", "VALUES 'taxonomy','vocabulary','term'");
   }
 
   @Test
   public void showColumns() {
-    MaterializedResult result = computeActual("SHOW COLUMNS FROM demo.datashield.cnsim1");
-    // variables properties
-    Assert.assertEquals(result.getRowCount(), 12);
+    MaterializedResult result = computeActual("SHOW COLUMNS FROM demo.taxonomies.taxonomy");
+    Assert.assertEquals(result.getRowCount(), 6);
     // TODO check data types
   }
 
   @Test
   public void selectAllFromDefault() {
-    computeActual("SELECT * FROM cnsim1");
+    computeActual("SELECT * FROM taxonomy");
   }
 
   @Test
   public void selectColumnFromDefault() {
-    MaterializedResult result = computeActual("SELECT name FROM cnsim1 LIMIT 10");
+    MaterializedResult result = computeActual("SELECT name FROM vocabulary LIMIT 10");
     Assert.assertEquals(result.getRowCount(), 10);
   }
 

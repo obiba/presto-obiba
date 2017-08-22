@@ -23,9 +23,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.obiba.presto.RestColumnHandle;
 import org.obiba.presto.opal.OpalDatasourcesRest;
-import org.obiba.presto.opal.model.OpalDatasource;
-import org.obiba.presto.opal.model.OpalValueSets;
-import org.obiba.presto.opal.model.OpalVariable;
+import org.obiba.presto.opal.model.ValueSets;
+import org.obiba.presto.opal.model.Variable;
 import retrofit2.Response;
 
 import java.io.IOException;
@@ -42,7 +41,7 @@ public class OpalValuesRest extends OpalDatasourcesRest {
   private Map<SchemaTableName, ConnectorTableMetadata> connectorTableMap = Maps.newHashMap();
 
   // schema table name vs (column name vs. variable name)
-  private Map<SchemaTableName, Map<String, OpalVariable>> columnNameMap = Maps.newHashMap();
+  private Map<SchemaTableName, Map<String, Variable>> columnNameMap = Maps.newHashMap();
 
   public OpalValuesRest(String url, String username, String password) {
     super(url, username, password);
@@ -50,16 +49,16 @@ public class OpalValuesRest extends OpalDatasourcesRest {
 
   @Override
   public synchronized ConnectorTableMetadata getTableMetadata(SchemaTableName schemaTableName) {
-    initializeDatasources();
+    initialize();
     if (connectorTableMap.containsKey(schemaTableName)) return connectorTableMap.get(schemaTableName);
     // fetch and cache variables
     try {
-      Response<List<OpalVariable>> response = service.listVariables(token, getOpalDatasourceName(schemaTableName), getOpalTableName(schemaTableName)).execute();
+      Response<List<Variable>> response = service.listVariables(token, getOpalDatasourceName(schemaTableName), getOpalTableName(schemaTableName)).execute();
       if (!response.isSuccessful())
         throw new IllegalStateException("Unable to read '" + getOpalTableRef(schemaTableName) + "' variables: " + response.message());
-      List<OpalVariable> variables = response.body();
+      List<Variable> variables = response.body();
       columnNameMap.put(schemaTableName, Maps.newHashMap());
-      for (OpalVariable variable : variables) {
+      for (Variable variable : variables) {
         String columnNameOrig = normalize(variable.getName());
         String columnName = columnNameOrig;
         int i = 1;
@@ -81,17 +80,17 @@ public class OpalValuesRest extends OpalDatasourcesRest {
 
   @Override
   public Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles, TupleDomain<ColumnHandle> tupleDomain) {
-    initializeDatasources();
+    initialize();
     try {
       List<List<String>> result = Lists.newArrayList();
       int offset = 0;
       Collection<List<String>> batchResult = null;
       while (batchResult == null || batchResult.size() == BATCH_SIZE) {
         // TODO use the tuple domain constraints
-        Response<OpalValueSets> execute = service.listValueSets(token, getOpalDatasourceName(schemaTableName), getOpalTableName(schemaTableName), offset, BATCH_SIZE).execute();
+        Response<ValueSets> execute = service.listValueSets(token, getOpalDatasourceName(schemaTableName), getOpalTableName(schemaTableName), offset, BATCH_SIZE).execute();
         if (!execute.isSuccessful())
           throw new IllegalStateException("Unable to read '" + getOpalTableRef(schemaTableName) + "' values: " + execute.message());
-        OpalValueSets valueSets = execute.body();
+        ValueSets valueSets = execute.body();
         batchResult = valueSets.getStringValues(restColumnHandles.stream().map(col -> getOpalVariable(schemaTableName, col)).collect(toList()));
         result.addAll(batchResult);
         offset = offset + BATCH_SIZE;
@@ -102,7 +101,7 @@ public class OpalValuesRest extends OpalDatasourcesRest {
     }
   }
 
-  private OpalVariable getOpalVariable(SchemaTableName schemaTableName, RestColumnHandle columnHandle) {
+  private Variable getOpalVariable(SchemaTableName schemaTableName, RestColumnHandle columnHandle) {
     return columnNameMap.get(schemaTableName).get(columnHandle.getName());
   }
 

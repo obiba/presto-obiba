@@ -12,18 +12,27 @@
  * limitations under the License.
  */
 
-package org.obiba.presto.opal.values;
+package org.obiba.presto.opal.model;
 
-import com.facebook.presto.spi.ColumnMetadata;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import static com.facebook.presto.spi.type.VarcharType.createUnboundedVarcharType;
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class LocaleText {
+  private final String locale;
+  private final String text;
 
-public class OpalIDColumnMetadata extends ColumnMetadata {
-
-  public static final String ID_COLUMN = "opal_id";
-
-  public OpalIDColumnMetadata() {
-    super(ID_COLUMN, createUnboundedVarcharType());
+  public LocaleText(@JsonProperty("locale") String locale,
+                    @JsonProperty("text") String text) {
+    this.locale = locale;
+    this.text = text;
   }
 
+  public String getLocale() {
+    return locale;
+  }
+
+  public String getText() {
+    return text;
+  }
 }

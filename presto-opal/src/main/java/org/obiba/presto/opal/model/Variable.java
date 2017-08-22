@@ -17,8 +17,10 @@ package org.obiba.presto.opal.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OpalVariable {
+public class Variable {
   private final String name;
   private final String entityType;
   private final String valueType;
@@ -28,16 +30,18 @@ public class OpalVariable {
   private final String referencedEntityType;
   private final String unit;
   private final int index;
+  private final List<Category> categories;
 
-  public OpalVariable(@JsonProperty("name") String name,
-                      @JsonProperty("entityType") String entityType,
-                      @JsonProperty("valueType") String valueType,
-                      @JsonProperty("repeatable") boolean repeatable,
-                      @JsonProperty("occurrenceGroup") String occurrenceGroup,
-                      @JsonProperty("mimeType") String mimeType,
-                      @JsonProperty("referencedEntityType") String referencedEntityType,
-                      @JsonProperty("unit") String unit,
-                      @JsonProperty("index") int index) {
+  public Variable(@JsonProperty("name") String name,
+                  @JsonProperty("entityType") String entityType,
+                  @JsonProperty("valueType") String valueType,
+                  @JsonProperty("isRepeatable") boolean repeatable,
+                  @JsonProperty("occurrenceGroup") String occurrenceGroup,
+                  @JsonProperty("mimeType") String mimeType,
+                  @JsonProperty("referencedEntityType") String referencedEntityType,
+                  @JsonProperty("unit") String unit,
+                  @JsonProperty("index") int index,
+                  @JsonProperty("categories") List<Category> categories) {
     this.name = name;
     this.entityType = entityType;
     this.valueType = valueType;
@@ -47,6 +51,7 @@ public class OpalVariable {
     this.referencedEntityType = referencedEntityType;
     this.unit = unit;
     this.index = index;
+    this.categories = categories;
   }
 
   public String getName() {
@@ -83,5 +88,13 @@ public class OpalVariable {
 
   public int getIndex() {
     return index;
+  }
+
+  public boolean hasCategories() {
+    return categories != null && !categories.isEmpty();
+  }
+
+  public List<Category> getCategories() {
+    return categories;
   }
 }

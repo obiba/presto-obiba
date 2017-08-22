@@ -23,14 +23,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OpalValueSets {
+public class ValueSets {
   private final String entityType;
   private final List<String> variables;
-  private final List<OpalValueSet> valueSets;
+  private final List<ValueSet> valueSets;
 
-  public OpalValueSets(@JsonProperty("entityType") String entityType,
-                       @JsonProperty("variables") List<String> variables,
-                       @JsonProperty("valueSets") List<OpalValueSet> valueSets) {
+  public ValueSets(@JsonProperty("entityType") String entityType,
+                   @JsonProperty("variables") List<String> variables,
+                   @JsonProperty("valueSets") List<ValueSet> valueSets) {
     this.entityType = entityType;
     this.variables = variables;
     this.valueSets = valueSets;
@@ -44,7 +44,7 @@ public class OpalValueSets {
     return variables;
   }
 
-  public List<OpalValueSet> getValueSets() {
+  public List<ValueSet> getValueSets() {
     return valueSets;
   }
 
@@ -54,7 +54,7 @@ public class OpalValueSets {
    * @param opalVariables
    * @return
    */
-  public Collection<List<String>> getStringValues(List<OpalVariable> opalVariables) {
+  public Collection<List<String>> getStringValues(List<Variable> opalVariables) {
     if (valueSets == null || valueSets.isEmpty()) return Lists.newArrayList();
     List<Integer> positions = opalVariables.stream().map(var -> var == null ? -1 : variables.indexOf(var.getName())).collect(Collectors.toList());
     return valueSets.stream().map(vs -> vs.getStringValues(positions)).collect(Collectors.toList());

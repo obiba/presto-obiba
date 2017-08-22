@@ -26,14 +26,14 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OpalValueSet {
+public class ValueSet {
   private final String identifier;
   private final List<Map<String, Object>> values;
   private final Timestamps timestamps;
 
-  public OpalValueSet(@JsonProperty("identifier") String identifier,
-                      @JsonProperty("values") List<Map<String, Object>> values,
-                      @JsonProperty("timestamps") Timestamps timestamps) {
+  public ValueSet(@JsonProperty("identifier") String identifier,
+                  @JsonProperty("values") List<Map<String, Object>> values,
+                  @JsonProperty("timestamps") Timestamps timestamps) {
     this.identifier = identifier;
     this.values = values;
     this.timestamps = timestamps;

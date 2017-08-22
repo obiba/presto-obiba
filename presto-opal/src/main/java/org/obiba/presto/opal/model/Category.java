@@ -14,39 +14,27 @@
 
 package org.obiba.presto.opal.model;
 
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OpalTable {
-  private final String datasourceName;
+public class Category {
+
   private final String name;
-  private final String entityType;
-  private final Timestamps timestamps;
+  private final boolean missing;
 
-  public OpalTable(@JsonProperty("datasourceName") String datasourceName,
-                   @JsonProperty("name") String name,
-                   @JsonProperty("entityType") String entityType,
-                   @JsonProperty("timestamps") Timestamps timestamps) {
-    this.datasourceName = datasourceName;
+  public Category(@JsonProperty("name") String name,
+                  @JsonProperty("isMissing") boolean missing) {
     this.name = name;
-    this.entityType = entityType;
-    this.timestamps = timestamps;
-  }
-
-  public String getDatasourceName() {
-    return datasourceName;
+    this.missing = missing;
   }
 
   public String getName() {
     return name;
   }
 
-  public String getEntityType() {
-    return entityType;
-  }
-
-  public Timestamps getTimestamps() {
-    return timestamps;
+  public boolean isMissing() {
+    return missing;
   }
 }

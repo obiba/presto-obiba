@@ -20,13 +20,15 @@ import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.SchemaTableName;
 import com.facebook.presto.spi.predicate.TupleDomain;
 import com.facebook.presto.spi.type.BooleanType;
+import com.facebook.presto.spi.type.IntegerType;
 import com.facebook.presto.spi.type.VarcharType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.obiba.presto.RestColumnHandle;
 import org.obiba.presto.opal.OpalDatasourcesRest;
-import org.obiba.presto.opal.model.OpalVariable;
+import org.obiba.presto.opal.model.Category;
+import org.obiba.presto.opal.model.Variable;
 import retrofit2.Response;
 
 import java.io.IOException;
@@ -46,9 +48,9 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
 
   @Override
   public synchronized ConnectorTableMetadata getTableMetadata(SchemaTableName schemaTableName) {
-    initializeDatasources();
+    initialize();
     if (connectorTableMap.containsKey(schemaTableName)) return connectorTableMap.get(schemaTableName);
-    List<ColumnMetadata> columns = ImmutableList.<ColumnMetadata>builder()
+    ImmutableList.Builder<ColumnMetadata> builder = ImmutableList.<ColumnMetadata>builder()
         .add(new ColumnMetadata("name", VarcharType.createUnboundedVarcharType()))
         .add(new ColumnMetadata("entity_type", VarcharType.createUnboundedVarcharType()))
         .add(new ColumnMetadata("value_type", VarcharType.createUnboundedVarcharType()))
@@ -57,18 +59,27 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
         .add(new ColumnMetadata("mime_type", VarcharType.createUnboundedVarcharType()))
         .add(new ColumnMetadata("referenced_entity_type", VarcharType.createUnboundedVarcharType()))
         .add(new ColumnMetadata("unit", VarcharType.createUnboundedVarcharType()))
-        .build();
-    ConnectorTableMetadata connectorTableMetadata = new ConnectorTableMetadata(schemaTableName, columns);
+        .add(new ColumnMetadata("index", IntegerType.INTEGER))
+        .add(new ColumnMetadata("categories", VarcharType.createUnboundedVarcharType()));
+    // TODO add taxonomy based attributes
+    // TODO add script attribute
+    // TODO add categories
+    for (String text : new String[]{"label", "description"}) {
+      for (String language : opalConf.getLanguages()) {
+        builder.add(new ColumnMetadata(text +":" + language, VarcharType.createUnboundedVarcharType()));
+      }
+    }
+    ConnectorTableMetadata connectorTableMetadata = new ConnectorTableMetadata(schemaTableName, builder.build());
     connectorTableMap.put(schemaTableName, connectorTableMetadata);
     return connectorTableMetadata;
   }
 
   @Override
   public Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles, TupleDomain<ColumnHandle> tupleDomain) {
-    initializeDatasources();
+    initialize();
     try {
       // TODO use the tuple domain constraints
-      Response<List<OpalVariable>> execute = service.listVariables(token, getOpalDatasourceName(schemaTableName), getOpalTableName(schemaTableName)).execute();
+      Response<List<Variable>> execute = service.listVariables(token, getOpalDatasourceName(schemaTableName), getOpalTableName(schemaTableName)).execute();
       if (!execute.isSuccessful())
         throw new IllegalStateException("Unable to read '" + getOpalTableRef(schemaTableName) + "' variables: " + execute.message());
       List<String> columnNames = restColumnHandles.stream().map(RestColumnHandle::getName).collect(Collectors.toList());
@@ -83,6 +94,10 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
           else if ("referenced_entity_type".equals(colName)) builder.add(v.getReferencedEntityType());
           else if ("mime_type".equals(colName)) builder.add(v.getMimeType());
           else if ("unit".equals(colName)) builder.add(v.getUnit());
+          else if ("index".equals(colName)) builder.add(v.getIndex());
+          else if ("categories".equals(colName)) builder.add(v.hasCategories() ?
+              v.getCategories().stream().map(Category::getName).collect(Collectors.joining(",")) : null);
+          else builder.add(null); // TODO parse attribute
         }
         return builder;
       }).collect(Collectors.toList());

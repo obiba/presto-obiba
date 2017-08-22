@@ -16,16 +16,16 @@ package org.obiba.presto.opal.values;
 
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.type.Type;
-import org.obiba.presto.opal.model.OpalVariable;
+import org.obiba.presto.opal.model.Variable;
 
 import static com.facebook.presto.spi.type.VarcharType.createUnboundedVarcharType;
 
 public class OpalColumnMetadata extends ColumnMetadata {
 
   // original variable name
-  private final OpalVariable variable;
+  private final Variable variable;
 
-  public OpalColumnMetadata(OpalVariable variable) {
+  public OpalColumnMetadata(Variable variable) {
     super(variable.getName(), convertType(variable.getValueType()));
     this.variable =variable;
   }

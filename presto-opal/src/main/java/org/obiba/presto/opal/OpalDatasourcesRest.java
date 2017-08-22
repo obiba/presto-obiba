@@ -17,7 +17,7 @@ package org.obiba.presto.opal;
 import com.facebook.presto.spi.SchemaTableName;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
-import org.obiba.presto.opal.model.OpalDatasource;
+import org.obiba.presto.opal.model.Datasource;
 import retrofit2.Response;
 
 import java.io.IOException;
@@ -26,10 +26,10 @@ import java.util.Map;
 
 public abstract class OpalDatasourcesRest extends OpalRest {
 
-  private List<OpalDatasource> datasources;
+  private List<Datasource> datasources;
 
   // schema name vs. opal datasource
-  protected Map<String, OpalDatasource> opalDatasourceMap = Maps.newHashMap();
+  protected Map<String, Datasource> opalDatasourceMap = Maps.newHashMap();
 
   // schema table name vs. opal table name
   protected Map<SchemaTableName, String> opalTableNameMap = Maps.newHashMap();
@@ -40,29 +40,35 @@ public abstract class OpalDatasourcesRest extends OpalRest {
 
   @Override
   public List<String> listSchemas() {
-    initializeDatasources();
+    initialize();
     return ImmutableList.copyOf(opalDatasourceMap.keySet());
   }
 
   @Override
   public List<SchemaTableName> listTables(String schema) {
-    initializeDatasources();
+    initialize();
     return ImmutableList.copyOf(opalTableNameMap.keySet());
+  }
+
+  @Override
+  protected synchronized void initialize() {
+    super.initialize();
+    initializeDatasources();
   }
 
   /**
    * Fetch opal datasources and associated tables.
    */
-  protected synchronized void initializeDatasources() {
+  private void initializeDatasources() {
     if (datasources != null && !datasources.isEmpty()) return;
     try {
-      Response<List<OpalDatasource>> response = service.listDatasources(token).execute();
+      Response<List<Datasource>> response = service.listDatasources(token).execute();
       if (!response.isSuccessful())
         throw new IllegalStateException("Unable to read opal datasources: " + response.message());
       datasources = response.body();
       // handle possible case conflicts
       opalDatasourceMap.clear();
-      for (OpalDatasource datasource : datasources) {
+      for (Datasource datasource : datasources) {
         String schemaNameOrig = normalize(datasource.getName());
         String schemaName = schemaNameOrig;
         int i = 1;
