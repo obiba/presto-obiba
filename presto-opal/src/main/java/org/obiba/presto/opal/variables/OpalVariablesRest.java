@@ -59,6 +59,8 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
     if (connectorTableMap.containsKey(schemaTableName)) return connectorTableMap.get(schemaTableName);
     ImmutableList.Builder<ColumnMetadata> builder = ImmutableList.<ColumnMetadata>builder()
         .add(new ColumnMetadata("name", VarcharType.createUnboundedVarcharType()))
+        .add(new ColumnMetadata("project", VarcharType.createUnboundedVarcharType()))
+        .add(new ColumnMetadata("table", VarcharType.createUnboundedVarcharType()))
         .add(new ColumnMetadata("entity_type", VarcharType.createUnboundedVarcharType()))
         .add(new ColumnMetadata("value_type", VarcharType.createUnboundedVarcharType()))
         .add(new ColumnMetadata("repeatable", BooleanType.BOOLEAN))
@@ -90,30 +92,32 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
         throw new IllegalStateException("Unable to read '" + getOpalTableRef(schemaTableName) + "' variables: " + execute.message());
       List<String> columnNames = restColumnHandles.stream().map(RestColumnHandle::getName).collect(Collectors.toList());
       return execute.body().stream().map(v -> {
-        List<Object> builder = Lists.newArrayList();
+        List<Object> row = Lists.newArrayList();
         for (String colName : columnNames) {
-          if ("name".equals(colName)) builder.add(v.getName());
-          else if ("entity_type".equals(colName)) builder.add(v.getEntityType());
-          else if ("value_type".equals(colName)) builder.add(v.getValueType());
-          else if ("repeatable".equals(colName)) builder.add(v.isRepeatable());
-          else if ("occurrence_group".equals(colName)) builder.add(v.getOccurrenceGroup());
-          else if ("referenced_entity_type".equals(colName)) builder.add(v.getReferencedEntityType());
-          else if ("mime_type".equals(colName)) builder.add(v.getMimeType());
-          else if ("unit".equals(colName)) builder.add(v.getUnit());
-          else if ("index".equals(colName)) builder.add(v.getIndex());
-          else if ("categories".equals(colName)) builder.add(v.hasCategories() ?
+          if ("name".equals(colName)) row.add(v.getName());
+          else if ("project".equals(colName)) row.add(getOpalDatasourceName(schemaTableName));
+          else if ("table".equals(colName)) row.add(getOpalTableName(schemaTableName));
+          else if ("entity_type".equals(colName)) row.add(v.getEntityType());
+          else if ("value_type".equals(colName)) row.add(v.getValueType());
+          else if ("repeatable".equals(colName)) row.add(v.isRepeatable());
+          else if ("occurrence_group".equals(colName)) row.add(v.getOccurrenceGroup());
+          else if ("referenced_entity_type".equals(colName)) row.add(v.getReferencedEntityType());
+          else if ("mime_type".equals(colName)) row.add(v.getMimeType());
+          else if ("unit".equals(colName)) row.add(v.getUnit());
+          else if ("index".equals(colName)) row.add(v.getIndex());
+          else if ("categories".equals(colName)) row.add(v.hasCategories() ?
               v.getCategories().stream().map(Category::getName).collect(Collectors.joining(",")) : null);
           else if ("script".equals(colName))
-            builder.add(v.getAttributeValue(null, "script", null));
+            row.add(v.getAttributeValue(null, "script", null));
           else if (colName.startsWith("label:"))
-            builder.add(v.getAttributeValue(null, "label", extractLocale(colName)));
+            row.add(v.getAttributeValue(null, "label", extractLocale(colName)));
           else if (colName.startsWith("description:"))
-            builder.add(v.getAttributeValue(null, "description", extractLocale(colName)));
+            row.add(v.getAttributeValue(null, "description", extractLocale(colName)));
           else if (vocabularyMap.containsKey(colName))
-            builder.add(v.getAttributeValue(vocabularyMap.get(colName)[0],vocabularyMap.get(colName)[1], null));
-          else builder.add(null); // TODO parse attribute
+            row.add(v.getAttributeValue(vocabularyMap.get(colName)[0],vocabularyMap.get(colName)[1], null));
+          else row.add(null);
         }
-        return builder;
+        return row;
       }).collect(Collectors.toList());
     } catch (IOException e) {
       throw new RuntimeException(e);
