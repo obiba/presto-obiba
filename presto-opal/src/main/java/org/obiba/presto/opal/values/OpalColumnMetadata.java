@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package org.obiba.presto.opal;
+package org.obiba.presto.opal.values;
 
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.type.Type;

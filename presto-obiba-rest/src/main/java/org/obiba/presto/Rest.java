@@ -20,6 +20,7 @@ import com.facebook.presto.spi.type.Type;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 
 import static java.util.stream.Collectors.toList;
@@ -41,13 +42,15 @@ public interface Rest
 
     Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles, TupleDomain<ColumnHandle> tupleDomain);
 
-    Consumer<List> createRowSink(SchemaTableName schemaTableName);
-
     default List<Type> getTypes(SchemaTableName schemaTableName)
     {
         return getTableMetadata(schemaTableName).getColumns().stream()
                 .map(ColumnMetadata::getType)
                 .collect(toList());
+    }
+
+    default String normalize(String name) {
+        return name.toLowerCase(Locale.ENGLISH).replace(' ', '_').replace("(", "").replace(")", "");
     }
 
     default boolean supportsPaging() { return false; }

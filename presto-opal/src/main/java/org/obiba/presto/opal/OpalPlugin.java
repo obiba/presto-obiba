@@ -18,12 +18,25 @@ import com.facebook.presto.spi.Plugin;
 import com.facebook.presto.spi.connector.ConnectorFactory;
 import com.google.common.collect.ImmutableList;
 import org.obiba.presto.RestConnectorFactory;
+import org.obiba.presto.opal.values.OpalValuesRest;
+import org.obiba.presto.opal.variables.OpalVariablesRest;
+
+import java.util.Map;
 
 public class OpalPlugin implements Plugin {
+
   @Override
   public Iterable<ConnectorFactory> getConnectorFactories() {
-    return ImmutableList.of(new RestConnectorFactory(
-        "opal", config -> new OpalRest(config.get("opal"), config.get("username"), config.get("password"))
-    ));
+    return ImmutableList.of(new RestConnectorFactory("opal", this::createRestFactory));
+  }
+
+  private OpalRest createRestFactory(Map<String, String> config) {
+    String catalogType = config.getOrDefault("opal.catalog-type", "values");
+    if ("values".equals(catalogType))
+      return new OpalValuesRest(config.get("opal.url"), config.get("opal.username"), config.get("opal.password"));
+    if ("variables".equals(catalogType))
+      return new OpalVariablesRest(config.get("opal.url"), config.get("opal.username"), config.get("opal.password"));
+    // TODO system
+    return new OpalValuesRest(config.get("opal.url"), config.get("opal.username"), config.get("opal.password"));
   }
 }

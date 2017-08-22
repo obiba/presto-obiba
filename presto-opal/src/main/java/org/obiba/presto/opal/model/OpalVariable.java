@@ -23,17 +23,29 @@ public class OpalVariable {
   private final String entityType;
   private final String valueType;
   private final boolean repeatable;
+  private final String occurrenceGroup;
+  private final String mimeType;
+  private final String referencedEntityType;
+  private final String unit;
   private final int index;
 
   public OpalVariable(@JsonProperty("name") String name,
                       @JsonProperty("entityType") String entityType,
                       @JsonProperty("valueType") String valueType,
                       @JsonProperty("repeatable") boolean repeatable,
+                      @JsonProperty("occurrenceGroup") String occurrenceGroup,
+                      @JsonProperty("mimeType") String mimeType,
+                      @JsonProperty("referencedEntityType") String referencedEntityType,
+                      @JsonProperty("unit") String unit,
                       @JsonProperty("index") int index) {
     this.name = name;
     this.entityType = entityType;
     this.valueType = valueType;
     this.repeatable = repeatable;
+    this.occurrenceGroup = occurrenceGroup;
+    this.mimeType = mimeType;
+    this.referencedEntityType = referencedEntityType;
+    this.unit = unit;
     this.index = index;
   }
 
@@ -51,6 +63,22 @@ public class OpalVariable {
 
   public boolean isRepeatable() {
     return repeatable;
+  }
+
+  public String getOccurrenceGroup() {
+    return occurrenceGroup;
+  }
+
+  public String getMimeType() {
+    return mimeType;
+  }
+
+  public String getReferencedEntityType() {
+    return referencedEntityType;
+  }
+
+  public String getUnit() {
+    return unit;
   }
 
   public int getIndex() {

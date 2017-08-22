@@ -25,9 +25,9 @@ import org.testng.annotations.Test;
 
 import static com.facebook.presto.testing.TestingSession.testSessionBuilder;
 
-public class OpalQueriesTest
+public class OpalValuesQueriesTest
     extends AbstractTestQueryFramework {
-  protected OpalQueriesTest()
+  protected OpalValuesQueriesTest()
       throws Exception {
     super(createLocalQueryRunner());
   }
@@ -45,9 +45,9 @@ public class OpalQueriesTest
     queryRunner.createCatalog(
         "demo",
         "opal",
-        ImmutableMap.of("opal", "https://opal-demo.obiba.org/",
-            "username", "administrator",
-            "password", "password"));
+        ImmutableMap.of("opal.url", "https://opal-demo.obiba.org/",
+            "opal.username", "administrator",
+            "opal.password", "password"));
 
     return new QueryRunnerSupplier() {
       @Override
