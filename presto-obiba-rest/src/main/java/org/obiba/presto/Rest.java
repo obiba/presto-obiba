@@ -59,7 +59,7 @@ public interface Rest
     }
 
     default String normalize(String name) {
-        return name.toLowerCase(Locale.ENGLISH).replace(' ', '_').replace("(", "").replace(")", "");
+        return name.toLowerCase(Locale.ENGLISH).replace(' ', '_').replace('-', '_').replace("(", "").replace(")", "");
     }
 
     default boolean supportsPaging() { return false; }

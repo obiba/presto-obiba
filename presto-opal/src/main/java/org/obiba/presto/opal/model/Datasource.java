@@ -17,6 +17,7 @@ package org.obiba.presto.opal.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Lists;
 
 import java.util.List;
 
@@ -42,7 +43,7 @@ public class Datasource {
   }
 
   public List<String> getTableNames() {
-    return tableNames;
+    return tableNames == null ? Lists.newArrayList() : tableNames;
   }
 
   public Timestamps getTimestamps() {
