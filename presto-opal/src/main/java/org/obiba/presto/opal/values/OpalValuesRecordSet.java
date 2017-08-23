@@ -27,9 +27,11 @@ import org.obiba.presto.RestRecordSet;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.joda.time.DateTimeZone.UTC;
 
@@ -137,15 +139,15 @@ public class OpalValuesRecordSet extends RestRecordSet {
       checkState(record != null, "no current record");
       Object value = record.get(field);
       checkNotNull(value, "value is null");
-      if (value instanceof byte[]) {
+      if (value instanceof byte[])
         return Slices.wrappedBuffer((byte[]) value);
-      }
-      if (value instanceof String) {
+      if (value instanceof String)
         return Slices.utf8Slice((String) value);
-      }
-      if (value instanceof Slice) {
+      if (value instanceof Slice)
         return (Slice) value;
-      }
+      if (value instanceof Collection<?>)
+        return Slices.utf8Slice(((Collection<?>) value).stream()
+            .map(val -> val == null ? "" : val.toString()).collect(Collectors.joining(",")));
       throw new IllegalArgumentException("Field " + field + " is not a String, but is a " + value.getClass().getName());
     }
 

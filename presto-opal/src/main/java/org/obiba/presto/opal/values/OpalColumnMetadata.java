@@ -26,7 +26,7 @@ public class OpalColumnMetadata extends ColumnMetadata {
   private final Variable variable;
 
   public OpalColumnMetadata(Variable variable) {
-    super(variable.getName(), convertType(variable.getValueType()));
+    super(variable.getName(), variable.isRepeatable() ? createUnboundedVarcharType() : convertType(variable.getValueType()));
     this.variable =variable;
   }
 

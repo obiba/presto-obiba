@@ -56,12 +56,10 @@ public class ValueSet {
     }).collect(Collectors.toList());
   }
 
-  private String asString(Object obj) {
-    if (obj == null) {
-      return null;
-    }
+  private Object asString(Object obj) {
+    if (obj == null) return null;
     if (obj instanceof Collection)
-      return ((Collection<?>) obj).stream().map(o -> asString(((Map<String, Object>) o).get("value"))).collect(Collectors.joining(","));
+      return ((Collection<?>) obj).stream().map(o -> asString(((Map<String, Object>) o).get("value"))).collect(Collectors.toList());
     return obj.toString();
   }
 }
