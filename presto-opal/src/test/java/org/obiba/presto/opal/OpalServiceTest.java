@@ -59,7 +59,7 @@ public class OpalServiceTest {
 
   @Test
   public void listTables() throws IOException {
-    Response<List<ValueTable>> response = service.listTables(getOpalAuth(), "datashield").execute();
+    Response<List<ValueTable>> response = service.listTables(getOpalAuth(), "datashield", false).execute();
     if (!response.isSuccessful()) Assert.fail();
     List<ValueTable> tables = response.body();
     Assert.assertEquals(tables.size(), 3);
@@ -67,7 +67,7 @@ public class OpalServiceTest {
 
   @Test
   public void getTable() throws IOException {
-    Response<ValueTable> response = service.getTable(getOpalAuth(), "datashield", "CNSIM1").execute();
+    Response<ValueTable> response = service.getTable(getOpalAuth(), "datashield", "CNSIM1", false).execute();
     if (!response.isSuccessful()) Assert.fail();
     ValueTable table = response.body();
     Assert.assertEquals(table.getDatasourceName(), "datashield");

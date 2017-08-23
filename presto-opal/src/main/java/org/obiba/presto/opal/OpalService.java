@@ -34,11 +34,11 @@ public interface OpalService {
 
   @Headers({"Accept: application/json"})
   @GET("/ws/datasource/{name}/tables")
-  Call<List<ValueTable>> listTables(@Header("Authorization") String opalAuth, @Path("name") String name);
+  Call<List<ValueTable>> listTables(@Header("Authorization") String opalAuth, @Path("name") String name, @Query("counts") boolean counts);
 
   @Headers({"Accept: application/json"})
   @GET("/ws/datasource/{ds}/table/{name}")
-  Call<ValueTable> getTable(@Header("Authorization") String opalAuth, @Path("ds") String datasource, @Path("name") String name);
+  Call<ValueTable> getTable(@Header("Authorization") String opalAuth, @Path("ds") String datasource, @Path("name") String name, @Query("counts") boolean counts);
 
   @Headers({"Accept: application/json"})
   @GET("/ws/datasource/{ds}/table/{name}/variables")
