@@ -147,7 +147,7 @@ public class OpalValuesRecordSet extends RestRecordSet {
         return (Slice) value;
       if (value instanceof Collection<?>)
         return Slices.utf8Slice(((Collection<?>) value).stream()
-            .map(val -> val == null ? "" : val.toString()).collect(Collectors.joining(",")));
+            .map(val -> val == null ? "" : val.toString()).collect(Collectors.joining("|")));
       throw new IllegalArgumentException("Field " + field + " is not a String, but is a " + value.getClass().getName());
     }
 
