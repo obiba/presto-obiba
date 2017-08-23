@@ -14,14 +14,13 @@
 
 package org.obiba.presto.opal.values;
 
-import com.facebook.presto.spi.ColumnHandle;
-import com.facebook.presto.spi.ColumnMetadata;
-import com.facebook.presto.spi.ConnectorTableMetadata;
-import com.facebook.presto.spi.SchemaTableName;
+import com.facebook.presto.spi.*;
 import com.facebook.presto.spi.predicate.TupleDomain;
+import com.facebook.presto.spi.type.Type;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.obiba.presto.RestColumnHandle;
+import org.obiba.presto.RestRecordSet;
 import org.obiba.presto.opal.OpalDatasourcesRest;
 import org.obiba.presto.opal.model.ValueSets;
 import org.obiba.presto.opal.model.Variable;
@@ -35,7 +34,7 @@ import static java.util.stream.Collectors.toList;
 
 public class OpalValuesRest extends OpalDatasourcesRest {
 
-  private static final int BATCH_SIZE = 10000;
+  public static final int BATCH_SIZE = 10000;
 
   // schema table name vs. columns
   private Map<SchemaTableName, ConnectorTableMetadata> connectorTableMap = Maps.newHashMap();
@@ -80,25 +79,26 @@ public class OpalValuesRest extends OpalDatasourcesRest {
 
   @Override
   public Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles) {
+    throw new UnsupportedOperationException();
+  }
+
+  public Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles, int offset) {
     initialize();
     try {
-      List<List<String>> result = Lists.newArrayList();
-      int offset = 0;
-      Collection<List<String>> batchResult = null;
-      while (batchResult == null || batchResult.size() == BATCH_SIZE) {
-        // TODO use the tuple domain constraints
-        Response<ValueSets> execute = service.listValueSets(token, getOpalDatasourceName(schemaTableName), getOpalTableName(schemaTableName), offset, BATCH_SIZE).execute();
-        if (!execute.isSuccessful())
-          throw new IllegalStateException("Unable to read '" + getOpalTableRef(schemaTableName) + "' values: " + execute.message());
-        ValueSets valueSets = execute.body();
-        batchResult = valueSets.getStringValues(restColumnHandles.stream().map(col -> getOpalVariable(schemaTableName, col)).collect(toList()));
-        result.addAll(batchResult);
-        offset = offset + BATCH_SIZE;
-      }
-      return result;
+      // TODO use the tuple domain constraints
+      Response<ValueSets> execute = service.listValueSets(token, getOpalDatasourceName(schemaTableName), getOpalTableName(schemaTableName), offset, BATCH_SIZE).execute();
+      if (!execute.isSuccessful())
+        throw new IllegalStateException("Unable to read '" + getOpalTableRef(schemaTableName) + "' values: " + execute.message());
+      ValueSets valueSets = execute.body();
+      return valueSets.getStringValues(restColumnHandles.stream().map(col -> getOpalVariable(schemaTableName, col)).collect(toList()));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public RecordSet getRecordSet(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles) {
+    return new OpalValuesRecordSet(this, schemaTableName, restColumnHandles);
   }
 
   private Variable getOpalVariable(SchemaTableName schemaTableName, RestColumnHandle columnHandle) {
