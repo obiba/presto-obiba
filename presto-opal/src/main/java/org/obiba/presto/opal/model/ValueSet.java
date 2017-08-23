@@ -50,8 +50,9 @@ public class ValueSet {
       if (pos < 0) return identifier;
       if (pos >= values.size()) return null;
       Map<String, Object> valueMap = values.get(pos);
+      if (valueMap.containsKey("length")) return asString(valueMap.get("length")); // size of the binary data
       if (valueMap.containsKey("value")) return asString(valueMap.get("value"));
-      else if (valueMap.containsKey("values")) return asString(valueMap.get("values"));
+      if (valueMap.containsKey("values")) return asString(valueMap.get("values"));
       return null;
     }).collect(Collectors.toList());
   }
@@ -59,7 +60,11 @@ public class ValueSet {
   private Object asString(Object obj) {
     if (obj == null) return null;
     if (obj instanceof Collection)
-      return ((Collection<?>) obj).stream().map(o -> asString(((Map<String, Object>) o).get("value"))).collect(Collectors.toList());
+      return ((Collection<?>) obj).stream().map(o -> {
+        Map<String, Object> valueMap = (Map<String, Object>) o;
+        if (valueMap.containsKey("length")) return asString(valueMap.get("length"));
+        return asString(valueMap.get("value"));
+      }).collect(Collectors.toList());
     return obj.toString();
   }
 }

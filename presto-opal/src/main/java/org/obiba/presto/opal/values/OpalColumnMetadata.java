@@ -36,7 +36,7 @@ public class OpalColumnMetadata extends ColumnMetadata {
 
   private static Type convertType(String valueType) {
     if ("text".equals(valueType)) return createUnboundedVarcharType();
-    if ("integer".equals(valueType)) return BigintType.BIGINT;
+    if ("integer".equals(valueType) || "binary".equals(valueType)) return BigintType.BIGINT;
     if ("decimal".equals(valueType)) return DoubleType.DOUBLE;
     if ("boolean".equals(valueType)) return BooleanType.BOOLEAN;
     if ("date".equals(valueType)) return DateType.DATE;
