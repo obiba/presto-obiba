@@ -40,11 +40,11 @@ public interface Rest
 
     List<SchemaTableName> listTables(String schema);
 
-    Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles, TupleDomain<ColumnHandle> tupleDomain);
+    Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles);
 
-    default RecordSet getRecordSet(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles, TupleDomain<ColumnHandle> tupleDomain)
+    default RecordSet getRecordSet(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles)
     {
-        Collection<? extends List<?>> rows = getRows(schemaTableName, restColumnHandles, tupleDomain);
+        Collection<? extends List<?>> rows = getRows(schemaTableName, restColumnHandles);
         List<Type> mappedTypes = restColumnHandles.stream()
             .map(RestColumnHandle::getType)
             .collect(toList());
@@ -62,5 +62,4 @@ public interface Rest
         return name.toLowerCase(Locale.ENGLISH).replace(' ', '_').replace('-', '_').replace("(", "").replace(")", "");
     }
 
-    default boolean supportsPaging() { return false; }
 }

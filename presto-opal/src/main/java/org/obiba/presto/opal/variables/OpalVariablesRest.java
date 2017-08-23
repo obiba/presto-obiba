@@ -83,7 +83,7 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
   }
 
   @Override
-  public Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles, TupleDomain<ColumnHandle> tupleDomain) {
+  public Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles) {
     initialize();
     try {
       // TODO use the tuple domain constraints

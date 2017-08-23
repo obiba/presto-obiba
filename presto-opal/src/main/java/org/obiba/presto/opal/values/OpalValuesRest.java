@@ -79,7 +79,7 @@ public class OpalValuesRest extends OpalDatasourcesRest {
   }
 
   @Override
-  public Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles, TupleDomain<ColumnHandle> tupleDomain) {
+  public Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles) {
     initialize();
     try {
       List<List<String>> result = Lists.newArrayList();

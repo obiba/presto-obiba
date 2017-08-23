@@ -78,7 +78,7 @@ public class OpalSystemRest extends OpalRest {
   }
 
   @Override
-  public Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles, TupleDomain<ColumnHandle> tupleDomain) {
+  public Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles) {
     initialize();
     try {
       // TODO use the tuple domain constraints
@@ -87,18 +87,18 @@ public class OpalSystemRest extends OpalRest {
         throw new IllegalStateException("Unable to read taxonomies: " + execute.message());
       List<String> columnNames = restColumnHandles.stream().map(RestColumnHandle::getName).collect(Collectors.toList());
       if ("taxonomy".equals(schemaTableName.getTableName()))
-        return getTaxonomyRows(columnNames, tupleDomain, execute.body());
+        return getTaxonomyRows(columnNames, execute.body());
       if ("vocabulary".equals(schemaTableName.getTableName()))
-        return getVocabularyRows(columnNames, tupleDomain, execute.body());
+        return getVocabularyRows(columnNames, execute.body());
       if ("term".equals(schemaTableName.getTableName()))
-        return getTermRows(columnNames, tupleDomain, execute.body());
+        return getTermRows(columnNames, execute.body());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
     throw new RuntimeException("Unknown opal system schema table: " + schemaTableName);
   }
 
-  private Collection<? extends List<?>> getTaxonomyRows(List<String> columnNames, TupleDomain<ColumnHandle> tupleDomain, List<Taxonomy> taxonomies) {
+  private Collection<? extends List<?>> getTaxonomyRows(List<String> columnNames, List<Taxonomy> taxonomies) {
     return taxonomies.stream().map(taxo -> {
       List<Object> row = Lists.newArrayList();
       for (String colName : columnNames) {
@@ -117,7 +117,7 @@ public class OpalSystemRest extends OpalRest {
     }).collect(Collectors.toList());
   }
 
-  private Collection<? extends List<?>> getVocabularyRows(List<String> columnNames, TupleDomain<ColumnHandle> tupleDomain, List<Taxonomy> taxonomies) {
+  private Collection<? extends List<?>> getVocabularyRows(List<String> columnNames, List<Taxonomy> taxonomies) {
     Collection<List<?>> rows = Lists.newArrayList();
     taxonomies.forEach(taxo -> {
       taxo.getVocabularies().forEach(voc -> {
@@ -139,7 +139,7 @@ public class OpalSystemRest extends OpalRest {
     return rows;
   }
 
-  private Collection<? extends List<?>> getTermRows(List<String> columnNames, TupleDomain<ColumnHandle> tupleDomain, List<Taxonomy> taxonomies) {
+  private Collection<? extends List<?>> getTermRows(List<String> columnNames, List<Taxonomy> taxonomies) {
     Collection<List<?>> rows = Lists.newArrayList();
     taxonomies.forEach(taxo -> {
       taxo.getVocabularies().forEach(voc -> {

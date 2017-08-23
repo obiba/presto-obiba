@@ -50,8 +50,7 @@ public class RestRecordSetProvider
     {
         RestConnectorSplit split = Types.checkType(connectorSplit, RestConnectorSplit.class, "split");
         List<RestColumnHandle> restColumnHandles = list.stream().map(col -> Types.checkType(col, RestColumnHandle.class, "columnHandle")).collect(toList());
-
         SchemaTableName schemaTableName = split.getTableHandle().getSchemaTableName();
-        return rest.getRecordSet(schemaTableName, restColumnHandles, split.getTupleDomain());
+        return rest.getRecordSet(schemaTableName, restColumnHandles);
     }
 }

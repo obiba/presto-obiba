@@ -54,10 +54,4 @@ public class RestConnector
         return new RestRecordSetProvider(rest);
     }
 
-    @Override
-    public ConnectorPageSourceProvider getPageSourceProvider() {
-        if (!rest.supportsPaging()) throw new UnsupportedOperationException();
-        return new RestPageSourceProvider(rest);
-    }
-
 }
