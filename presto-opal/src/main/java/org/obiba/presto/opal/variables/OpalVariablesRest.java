@@ -14,14 +14,13 @@
 
 package org.obiba.presto.opal.variables;
 
-import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.SchemaTableName;
-import com.facebook.presto.spi.predicate.TupleDomain;
 import com.facebook.presto.spi.type.BooleanType;
 import com.facebook.presto.spi.type.IntegerType;
 import com.facebook.presto.spi.type.VarcharType;
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -37,6 +36,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class OpalVariablesRest extends OpalDatasourcesRest {
@@ -70,6 +70,9 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
         .add(new ColumnMetadata("unit", VarcharType.createUnboundedVarcharType()))
         .add(new ColumnMetadata("index", IntegerType.INTEGER))
         .add(new ColumnMetadata("categories", VarcharType.createUnboundedVarcharType()));
+    for (String language : opalConf.getLanguages()) {
+      builder.add(new ColumnMetadata("categories_label:" + language, VarcharType.createUnboundedVarcharType()));
+    }
     builder.add(new ColumnMetadata("script", VarcharType.createUnboundedVarcharType()));
     for (String text : new String[]{"label", "description"}) {
       for (String language : opalConf.getLanguages()) {
@@ -86,7 +89,6 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
   public Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles) {
     initialize();
     try {
-      // TODO use the tuple domain constraints
       Response<List<Variable>> execute = service.listVariables(token, getOpalDatasourceName(schemaTableName), getOpalTableName(schemaTableName)).execute();
       if (!execute.isSuccessful())
         throw new IllegalStateException("Unable to read '" + getOpalTableRef(schemaTableName) + "' variables: " + execute.message());
@@ -106,7 +108,18 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
           else if ("unit".equals(colName)) row.add(v.getUnit());
           else if ("index".equals(colName)) row.add(v.getIndex());
           else if ("categories".equals(colName)) row.add(v.hasCategories() ?
-              v.getCategories().stream().map(Category::getName).collect(Collectors.joining(",")) : null);
+              v.getCategories().stream().map(Category::getName)
+                  .collect(Collectors.joining("|")) : null);
+          else if (colName.startsWith("categories_label:")) {
+            if (!v.hasCategories()) row.add(null);
+            else {
+              String locale = extractLocale(colName);
+              List<String> labels = v.getCategories().stream().map(cat -> cat.getLabelValue(locale)).collect(Collectors.toList());
+              if (labels.stream().noneMatch(Objects::nonNull)) row.add(null);
+              else
+                row.add(Joiner.on("|").join(labels.stream().map(l -> l == null ? "" : l).collect(Collectors.toList())));
+            }
+          }
           else if ("script".equals(colName))
             row.add(v.getAttributeValue(null, "script", null));
           else if (colName.startsWith("label:"))
@@ -114,7 +127,7 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
           else if (colName.startsWith("description:"))
             row.add(v.getAttributeValue(null, "description", extractLocale(colName)));
           else if (vocabularyMap.containsKey(colName))
-            row.add(v.getAttributeValue(vocabularyMap.get(colName)[0],vocabularyMap.get(colName)[1], null));
+            row.add(v.getAttributeValue(vocabularyMap.get(colName)[0], vocabularyMap.get(colName)[1], null));
           else row.add(null);
         }
         return row;
@@ -150,7 +163,7 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
       // Vocabulary names in the form of attribute header: namespace::name.
       vocabularyMap = Maps.newHashMap();
       taxonomies.forEach(taxo -> taxo.getVocabularies()
-          .forEach(voc -> vocabularyMap.put(normalize(taxo.getName() + "::" + voc.getName()), new String[] {taxo.getName(), voc.getName()})));
+          .forEach(voc -> vocabularyMap.put(normalize(taxo.getName() + "::" + voc.getName()), new String[]{taxo.getName(), voc.getName()})));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

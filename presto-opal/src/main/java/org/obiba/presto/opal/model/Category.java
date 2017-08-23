@@ -18,16 +18,21 @@ package org.obiba.presto.opal.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Category {
 
   private final String name;
   private final boolean missing;
+  private final List<Attribute> attributes;
 
   public Category(@JsonProperty("name") String name,
-                  @JsonProperty("isMissing") boolean missing) {
+                  @JsonProperty("isMissing") boolean missing,
+                  @JsonProperty("attributes") List<Attribute> attributes) {
     this.name = name;
     this.missing = missing;
+    this.attributes = attributes;
   }
 
   public String getName() {
@@ -36,5 +41,22 @@ public class Category {
 
   public boolean isMissing() {
     return missing;
+  }
+
+  public boolean hasAttributes() {
+    return attributes != null && !attributes.isEmpty();
+  }
+
+  public List<Attribute> getAttributes() {
+    return attributes;
+  }
+
+  public String getLabelValue(String locale) {
+    return getAttributeValue(null, "label", locale);
+  }
+
+  public String getAttributeValue(String namespace, String name, String locale) {
+    if (!hasAttributes()) return null;
+    return attributes.stream().filter(attr -> attr.isFor(namespace, name, locale)).map(Attribute::getValue).findFirst().orElse(null);
   }
 }
