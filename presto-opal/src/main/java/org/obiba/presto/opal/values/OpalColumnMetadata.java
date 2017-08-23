@@ -15,7 +15,7 @@
 package org.obiba.presto.opal.values;
 
 import com.facebook.presto.spi.ColumnMetadata;
-import com.facebook.presto.spi.type.Type;
+import com.facebook.presto.spi.type.*;
 import org.obiba.presto.opal.model.Variable;
 
 import static com.facebook.presto.spi.type.VarcharType.createUnboundedVarcharType;
@@ -35,6 +35,12 @@ public class OpalColumnMetadata extends ColumnMetadata {
   }
 
   private static Type convertType(String valueType) {
+    if ("text".equals(valueType)) return createUnboundedVarcharType();
+    if ("integer".equals(valueType)) return BigintType.BIGINT;
+    if ("decimal".equals(valueType)) return DoubleType.DOUBLE;
+    if ("boolean".equals(valueType)) return BooleanType.BOOLEAN;
+    if ("date".equals(valueType)) return DateType.DATE;
+    if ("datetime".equals(valueType)) return TimestampType.TIMESTAMP;
     return createUnboundedVarcharType();
   }
 }

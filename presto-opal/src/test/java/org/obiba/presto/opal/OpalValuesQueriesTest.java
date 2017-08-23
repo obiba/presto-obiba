@@ -81,8 +81,13 @@ public class OpalValuesQueriesTest
   }
 
   @Test
+  public void selectAllFromDefault2() {
+    computeActual("SELECT * FROM demo.cptp.cag_coreqx");
+  }
+
+  @Test
   public void selectColumnFromDefault() {
-    MaterializedResult result = computeActual("SELECT gender FROM cnsim1 WHERE gender = '1' LIMIT 10");
+    MaterializedResult result = computeActual("SELECT gender FROM cnsim1 WHERE gender = 1 LIMIT 10");
     Assert.assertEquals(result.getRowCount(), 10);
   }
 

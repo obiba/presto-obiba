@@ -54,7 +54,7 @@ public class ValueSets {
    * @param opalVariables
    * @return
    */
-  public Collection<List<String>> getStringValues(List<Variable> opalVariables) {
+  public Collection<List<?>> getStringValues(List<Variable> opalVariables) {
     if (valueSets == null || valueSets.isEmpty()) return Lists.newArrayList();
     List<Integer> positions = opalVariables.stream().map(var -> var == null ? -1 : variables.indexOf(var.getName())).collect(Collectors.toList());
     return valueSets.stream().map(vs -> vs.getStringValues(positions)).collect(Collectors.toList());

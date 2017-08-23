@@ -82,7 +82,7 @@ public class OpalValuesRest extends OpalDatasourcesRest {
     throw new UnsupportedOperationException();
   }
 
-  public Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles, int offset) {
+  Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles, int offset) {
     initialize();
     try {
       // TODO use the tuple domain constraints
