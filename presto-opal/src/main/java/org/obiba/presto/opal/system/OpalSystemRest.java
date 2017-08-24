@@ -14,11 +14,9 @@
 
 package org.obiba.presto.opal.system;
 
-import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.SchemaTableName;
-import com.facebook.presto.spi.predicate.TupleDomain;
 import com.facebook.presto.spi.type.BooleanType;
 import com.facebook.presto.spi.type.VarcharType;
 import com.google.common.base.Splitter;

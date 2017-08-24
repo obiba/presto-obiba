@@ -14,20 +14,21 @@
 
 package org.obiba.presto.opal.values;
 
-import com.facebook.presto.spi.*;
-import com.facebook.presto.spi.predicate.TupleDomain;
-import com.facebook.presto.spi.type.Type;
-import com.google.common.collect.Lists;
+import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ConnectorTableMetadata;
+import com.facebook.presto.spi.RecordSet;
+import com.facebook.presto.spi.SchemaTableName;
 import com.google.common.collect.Maps;
 import org.obiba.presto.RestColumnHandle;
-import org.obiba.presto.RestRecordSet;
 import org.obiba.presto.opal.OpalDatasourcesRest;
 import org.obiba.presto.opal.model.ValueSets;
 import org.obiba.presto.opal.model.Variable;
 import retrofit2.Response;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
@@ -102,13 +103,14 @@ public class OpalValuesRest extends OpalDatasourcesRest {
   }
 
   @Override
-  protected synchronized void initialize() {
-    super.initialize();
+  protected void onDatasourcesInitialized() {
     connectorTableMap.clear();
     columnNameMap.clear();
   }
 
   private Variable getOpalVariable(SchemaTableName schemaTableName, RestColumnHandle columnHandle) {
+    // ensure columns are known
+    getTableMetadata(schemaTableName);
     return columnNameMap.get(schemaTableName).get(columnHandle.getName());
   }
 

@@ -48,7 +48,7 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
   private Map<SchemaTableName, ConnectorTableMetadata> connectorTableMap = Maps.newHashMap();
 
   // column name vs. taxonomy-vocabulary tuple
-  private Map<String, String[]> vocabularyMap;
+  private Map<String, String[]> vocabularyMap = Maps.newHashMap();
 
   public OpalVariablesRest(String url, String username, String password, int cacheDelay) {
     super(url, username, password, cacheDelay);
@@ -120,8 +120,7 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
               else
                 row.add(Joiner.on("|").join(labels.stream().map(l -> l == null ? "" : l).collect(Collectors.toList())));
             }
-          }
-          else if ("script".equals(colName))
+          } else if ("script".equals(colName))
             row.add(v.getAttributeValue(null, "script", null));
           else if (colName.startsWith("label:"))
             row.add(v.getAttributeValue(null, "label", extractLocale(colName)));
@@ -164,7 +163,6 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
         throw new IllegalStateException("Unable to read opal taxonomies: " + response.message());
       List<Taxonomy> taxonomies = response.body();
       // Vocabulary names in the form of attribute header: namespace::name.
-      vocabularyMap = Maps.newHashMap();
       taxonomies.forEach(taxo -> taxo.getVocabularies()
           .forEach(voc -> vocabularyMap.put(normalize(taxo.getName() + "::" + voc.getName()), new String[]{taxo.getName(), voc.getName()})));
       taxonomiesCache = new RestCache<>(taxonomies, cacheDelay);

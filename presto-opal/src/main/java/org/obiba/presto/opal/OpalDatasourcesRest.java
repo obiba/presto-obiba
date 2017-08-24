@@ -92,9 +92,14 @@ public abstract class OpalDatasourcesRest extends OpalRest {
         }
       }
       datasourcesCache = new RestCache<>(datasources, cacheDelay);
+      onDatasourcesInitialized();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  protected void onDatasourcesInitialized() {
+
   }
 
   protected String getOpalDatasourceName(SchemaTableName schemaTableName) {

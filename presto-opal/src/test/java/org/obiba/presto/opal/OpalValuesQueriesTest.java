@@ -81,7 +81,7 @@ public class OpalValuesQueriesTest
   }
 
   @Test
-  public void selectAllFromDefault2() {
+  public void selectAllWithVariousDataTypes() {
     computeActual("SELECT * FROM demo.cptp.cag_coreqx");
   }
 
