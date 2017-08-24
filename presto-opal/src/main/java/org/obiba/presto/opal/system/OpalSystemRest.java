@@ -16,6 +16,7 @@ package org.obiba.presto.opal.system;
 
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorTableMetadata;
+import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.SchemaTableName;
 import com.facebook.presto.spi.type.BooleanType;
 import com.facebook.presto.spi.type.VarcharType;
@@ -34,6 +35,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.facebook.presto.spi.StandardErrorCode.GENERIC_INTERNAL_ERROR;
 
 public class OpalSystemRest extends OpalRest {
 
@@ -91,9 +94,9 @@ public class OpalSystemRest extends OpalRest {
       if ("term".equals(schemaTableName.getTableName()))
         return getTermRows(columnNames, execute.body());
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new PrestoException(GENERIC_INTERNAL_ERROR, e);
     }
-    throw new RuntimeException("Unknown opal system schema table: " + schemaTableName);
+    throw new PrestoException(GENERIC_INTERNAL_ERROR, "Unknown opal system schema table: " + schemaTableName);
   }
 
   private Collection<? extends List<?>> getTaxonomyRows(List<String> columnNames, List<Taxonomy> taxonomies) {

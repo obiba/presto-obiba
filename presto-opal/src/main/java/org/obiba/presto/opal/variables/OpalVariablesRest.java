@@ -16,6 +16,7 @@ package org.obiba.presto.opal.variables;
 
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorTableMetadata;
+import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.SchemaTableName;
 import com.facebook.presto.spi.type.BooleanType;
 import com.facebook.presto.spi.type.IntegerType;
@@ -39,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.facebook.presto.spi.StandardErrorCode.GENERIC_INTERNAL_ERROR;
 
 public class OpalVariablesRest extends OpalDatasourcesRest {
 
@@ -133,7 +136,7 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
         return row;
       }).collect(Collectors.toList());
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new PrestoException(GENERIC_INTERNAL_ERROR, e);
     }
   }
 
@@ -167,7 +170,7 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
           .forEach(voc -> vocabularyMap.put(normalize(taxo.getName() + "::" + voc.getName()), new String[]{taxo.getName(), voc.getName()})));
       taxonomiesCache = new RestCache<>(taxonomies, cacheDelay);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new PrestoException(GENERIC_INTERNAL_ERROR, e);
     }
   }
 

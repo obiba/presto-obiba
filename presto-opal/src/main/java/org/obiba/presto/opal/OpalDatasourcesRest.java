@@ -14,6 +14,7 @@
 
 package org.obiba.presto.opal;
 
+import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.SchemaTableName;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
@@ -24,6 +25,8 @@ import retrofit2.Response;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+
+import static com.facebook.presto.spi.StandardErrorCode.GENERIC_INTERNAL_ERROR;
 
 public abstract class OpalDatasourcesRest extends OpalRest {
 
@@ -94,7 +97,7 @@ public abstract class OpalDatasourcesRest extends OpalRest {
       datasourcesCache = new RestCache<>(datasources, cacheDelay);
       onDatasourcesInitialized();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new PrestoException(GENERIC_INTERNAL_ERROR, e);
     }
   }
 

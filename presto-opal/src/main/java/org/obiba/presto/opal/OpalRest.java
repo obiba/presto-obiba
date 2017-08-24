@@ -14,6 +14,7 @@
 
 package org.obiba.presto.opal;
 
+import com.facebook.presto.spi.PrestoException;
 import org.obiba.presto.Rest;
 import org.obiba.presto.RestCache;
 import org.obiba.presto.opal.model.OpalConf;
@@ -23,6 +24,8 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import java.io.IOException;
 import java.util.Base64;
+
+import static com.facebook.presto.spi.StandardErrorCode.GENERIC_INTERNAL_ERROR;
 
 public abstract class OpalRest implements Rest {
 
@@ -61,7 +64,7 @@ public abstract class OpalRest implements Rest {
         throw new IllegalStateException("Unable to read opal datasources: " + response.message());
       opalConfCache = new RestCache<>(response.body(), cacheDelay);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new PrestoException(GENERIC_INTERNAL_ERROR, e);
     }
   }
 

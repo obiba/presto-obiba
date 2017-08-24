@@ -14,10 +14,7 @@
 
 package org.obiba.presto.opal.values;
 
-import com.facebook.presto.spi.ColumnMetadata;
-import com.facebook.presto.spi.ConnectorTableMetadata;
-import com.facebook.presto.spi.RecordSet;
-import com.facebook.presto.spi.SchemaTableName;
+import com.facebook.presto.spi.*;
 import com.google.common.collect.Maps;
 import org.obiba.presto.RestColumnHandle;
 import org.obiba.presto.opal.OpalDatasourcesRest;
@@ -31,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.facebook.presto.spi.StandardErrorCode.GENERIC_INTERNAL_ERROR;
 import static java.util.stream.Collectors.toList;
 
 public class OpalValuesRest extends OpalDatasourcesRest {
@@ -74,7 +72,7 @@ public class OpalValuesRest extends OpalDatasourcesRest {
       connectorTableMap.put(schemaTableName, connectorTableMetadata);
       return connectorTableMetadata;
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new PrestoException(GENERIC_INTERNAL_ERROR, e);
     }
   }
 
@@ -93,7 +91,7 @@ public class OpalValuesRest extends OpalDatasourcesRest {
       ValueSets valueSets = execute.body();
       return valueSets.getStringValues(restColumnHandles.stream().map(col -> getOpalVariable(schemaTableName, col)).collect(toList()));
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new PrestoException(GENERIC_INTERNAL_ERROR, e);
     }
   }
 
