@@ -20,35 +20,26 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Term {
+public class Term extends TaxonomyEntity {
   private final String name;
-  private final List<LocaleText> title;
-  private final List<LocaleText> description;
-  private final List<LocaleText> keywords;
+  private final List<Term> terms;
 
   public Term(@JsonProperty("name") String name,
               @JsonProperty("title") List<LocaleText> title,
               @JsonProperty("description") List<LocaleText> description,
-              @JsonProperty("keywords") List<LocaleText> keywords) {
+              @JsonProperty("keywords") List<LocaleText> keywords,
+              @JsonProperty("attributes") List<Entry> attributes,
+              @JsonProperty("terms") List<Term> terms) {
+    super(title, description, keywords, attributes);
     this.name = name;
-    this.title = title;
-    this.description = description;
-    this.keywords = keywords;
+    this.terms = terms;
   }
 
   public String getName() {
     return name;
   }
 
-  public List<LocaleText> getTitle() {
-    return title;
-  }
-
-  public List<LocaleText> getDescription() {
-    return description;
-  }
-
-  public List<LocaleText> getKeywords() {
-    return keywords;
+  public List<Term> getTerms() {
+    return terms;
   }
 }

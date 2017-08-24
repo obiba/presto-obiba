@@ -21,26 +21,21 @@ import com.google.common.collect.Lists;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Vocabulary {
+public class Vocabulary extends TaxonomyEntity {
   private final String name;
   private final boolean repeatable;
-  private final List<LocaleText> title;
-  private final List<LocaleText> description;
-  private final List<LocaleText> keywords;
   private final List<Term> terms;
-
 
   public Vocabulary(@JsonProperty("name") String name,
                     @JsonProperty("repeatable") boolean repeatable,
                     @JsonProperty("title") List<LocaleText> title,
                     @JsonProperty("description") List<LocaleText> description,
                     @JsonProperty("keywords") List<LocaleText> keywords,
+                    @JsonProperty("attributes") List<Entry> attributes,
                     @JsonProperty("terms") List<Term> terms) {
+    super(title, description, keywords, attributes);
     this.name = name;
     this.repeatable = repeatable;
-    this.title = title;
-    this.description = description;
-    this.keywords = keywords;
     this.terms = terms;
   }
 
@@ -50,18 +45,6 @@ public class Vocabulary {
 
   public boolean isRepeatable() {
     return repeatable;
-  }
-
-  public List<LocaleText> getTitle() {
-    return title;
-  }
-
-  public List<LocaleText> getDescription() {
-    return description;
-  }
-
-  public List<LocaleText> getKeywords() {
-    return keywords;
   }
 
   public List<Term> getTerms() {

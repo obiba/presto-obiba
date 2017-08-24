@@ -21,15 +21,11 @@ import com.google.common.collect.Lists;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Taxonomy {
+public class Taxonomy extends TaxonomyEntity {
   private final String name;
   private final String author;
   private final String license;
-  private final List<LocaleText> title;
-  private final List<LocaleText> description;
-  private final List<LocaleText> keywords;
   private final List<Vocabulary> vocabularies;
-
 
   public Taxonomy(@JsonProperty("name") String name,
                   @JsonProperty("author") String author,
@@ -37,13 +33,12 @@ public class Taxonomy {
                   @JsonProperty("title") List<LocaleText> title,
                   @JsonProperty("description") List<LocaleText> description,
                   @JsonProperty("keywords") List<LocaleText> keywords,
+                  @JsonProperty("attributes") List<Entry> attributes,
                   @JsonProperty("vocabularies") List<Vocabulary> vocabularies) {
+    super(title, description, keywords, attributes);
     this.name = name;
     this.author = author;
     this.license = license;
-    this.title = title;
-    this.description = description;
-    this.keywords = keywords;
     this.vocabularies = vocabularies;
   }
 
@@ -57,18 +52,6 @@ public class Taxonomy {
 
   public String getLicense() {
     return license;
-  }
-
-  public List<LocaleText> getTitle() {
-    return title;
-  }
-
-  public List<LocaleText> getDescription() {
-    return description;
-  }
-
-  public List<LocaleText> getKeywords() {
-    return keywords;
   }
 
   public List<Vocabulary> getVocabularies() {

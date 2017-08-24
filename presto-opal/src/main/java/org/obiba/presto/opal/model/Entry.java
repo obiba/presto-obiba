@@ -17,24 +17,35 @@ package org.obiba.presto.opal.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Date;
+import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Timestamps {
-  private final Date created;
-  private final Date lastUpdate;
+public class Entry {
+  private final String key;
+  private final String value;
+  private final List<String> values;
 
-  public Timestamps(@JsonProperty("created") Date created,
-                    @JsonProperty("lastUpdate") Date lastUpdate) {
-    this.created = created;
-    this.lastUpdate = lastUpdate;
+  public Entry(@JsonProperty("key") String key,
+               @JsonProperty("value") String value,
+               @JsonProperty("values") List<String> values) {
+    this.key = key;
+    this.value = value;
+    this.values = values;
   }
 
-  public Date getCreated() {
-    return created;
+  public String getKey() {
+    return key;
   }
 
-  public Date getLastUpdate() {
-    return lastUpdate;
+  public String getValue() {
+    return value;
+  }
+
+  public boolean hasValues() {
+    return values != null && !values.isEmpty();
+  }
+
+  public List<String> getValues() {
+    return values;
   }
 }
