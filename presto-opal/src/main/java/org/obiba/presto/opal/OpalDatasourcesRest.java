@@ -17,6 +17,7 @@ package org.obiba.presto.opal;
 import com.facebook.presto.spi.SchemaTableName;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
+import org.obiba.presto.RestCache;
 import org.obiba.presto.opal.model.Datasource;
 import retrofit2.Response;
 
@@ -26,7 +27,7 @@ import java.util.Map;
 
 public abstract class OpalDatasourcesRest extends OpalRest {
 
-  private List<Datasource> datasources;
+  private RestCache<List<Datasource>> datasourcesCache;
 
   // schema name vs. opal datasource
   protected Map<String, Datasource> opalDatasourceMap = Maps.newHashMap();
@@ -34,8 +35,8 @@ public abstract class OpalDatasourcesRest extends OpalRest {
   // schema table name vs. opal table name
   protected Map<SchemaTableName, String> opalTableNameMap = Maps.newHashMap();
 
-  public OpalDatasourcesRest(String url, String username, String password) {
-    super(url, username, password);
+  public OpalDatasourcesRest(String url, String username, String password, int cacheDelay) {
+    super(url, username, password, cacheDelay);
   }
 
   @Override
@@ -60,12 +61,15 @@ public abstract class OpalDatasourcesRest extends OpalRest {
    * Fetch opal datasources and associated tables.
    */
   private void initializeDatasources() {
-    if (datasources != null && !datasources.isEmpty()) return;
+    if (datasourcesCache != null && !datasourcesCache.hasExpired() && !datasourcesCache.getItem().isEmpty()) return;
+    datasourcesCache = null;
+    opalDatasourceMap.clear();
+    opalTableNameMap.clear();
     try {
       Response<List<Datasource>> response = service.listDatasources(token).execute();
       if (!response.isSuccessful())
         throw new IllegalStateException("Unable to read opal datasources: " + response.message());
-      datasources = response.body();
+      List<Datasource> datasources = response.body();
       // handle possible case conflicts
       opalDatasourceMap.clear();
       for (Datasource datasource : datasources) {
@@ -87,6 +91,7 @@ public abstract class OpalDatasourcesRest extends OpalRest {
           opalTableNameMap.put(schemaTableName, tableName);
         }
       }
+      datasourcesCache = new RestCache<>(datasources, cacheDelay);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

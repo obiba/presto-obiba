@@ -15,6 +15,7 @@
 package org.obiba.presto.opal;
 
 import org.obiba.presto.Rest;
+import org.obiba.presto.RestCache;
 import org.obiba.presto.opal.model.OpalConf;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -26,12 +27,18 @@ import java.util.Base64;
 public abstract class OpalRest implements Rest {
 
   private final String opalUrl;
+  protected final int cacheDelay;
   protected final String token;
   protected final OpalService service;
-  protected OpalConf opalConf;
+  protected RestCache<OpalConf> opalConfCache;
 
   public OpalRest(String url, String username, String password) {
+    this(url, username, password, 300);
+  }
+
+  public OpalRest(String url, String username, String password, int cacheDelay) {
     this.opalUrl = url;
+    this.cacheDelay = cacheDelay;
     // TODO login and use session id instead of authenticating at each request
     this.token = "X-Opal-Auth " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
     this.service = new Retrofit.Builder()
@@ -46,12 +53,13 @@ public abstract class OpalRest implements Rest {
   }
 
   private void initializeOpalConf() {
-    if (opalConf != null) return;
+    if (opalConfCache != null && !opalConfCache.hasExpired()) return;
+    opalConfCache = null;
     try {
       Response<OpalConf> response = service.getOpalConf(token).execute();
       if (!response.isSuccessful())
         throw new IllegalStateException("Unable to read opal datasources: " + response.message());
-      opalConf = response.body();
+      opalConfCache = new RestCache<>(response.body(), cacheDelay);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

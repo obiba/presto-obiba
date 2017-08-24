@@ -25,6 +25,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.obiba.presto.RestCache;
 import org.obiba.presto.RestColumnHandle;
 import org.obiba.presto.opal.OpalDatasourcesRest;
 import org.obiba.presto.opal.model.Category;
@@ -41,7 +42,7 @@ import java.util.stream.Collectors;
 
 public class OpalVariablesRest extends OpalDatasourcesRest {
 
-  private List<Taxonomy> taxonomies;
+  private RestCache<List<Taxonomy>> taxonomiesCache;
 
   // schema table name vs. columns
   private Map<SchemaTableName, ConnectorTableMetadata> connectorTableMap = Maps.newHashMap();
@@ -49,8 +50,8 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
   // column name vs. taxonomy-vocabulary tuple
   private Map<String, String[]> vocabularyMap;
 
-  public OpalVariablesRest(String url, String username, String password) {
-    super(url, username, password);
+  public OpalVariablesRest(String url, String username, String password, int cacheDelay) {
+    super(url, username, password, cacheDelay);
   }
 
   @Override
@@ -70,12 +71,12 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
         .add(new ColumnMetadata("unit", VarcharType.createUnboundedVarcharType()))
         .add(new ColumnMetadata("index", IntegerType.INTEGER))
         .add(new ColumnMetadata("categories", VarcharType.createUnboundedVarcharType()));
-    for (String language : opalConf.getLanguages()) {
+    for (String language : opalConfCache.getItem().getLanguages()) {
       builder.add(new ColumnMetadata("categories_label:" + language, VarcharType.createUnboundedVarcharType()));
     }
     builder.add(new ColumnMetadata("script", VarcharType.createUnboundedVarcharType()));
     for (String text : new String[]{"label", "description"}) {
-      for (String language : opalConf.getLanguages()) {
+      for (String language : opalConfCache.getItem().getLanguages()) {
         builder.add(new ColumnMetadata(text + ":" + language, VarcharType.createUnboundedVarcharType()));
       }
     }
@@ -154,16 +155,19 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
   }
 
   private void initializeTaxonomies() {
-    if (taxonomies != null && !taxonomies.isEmpty()) return;
+    if (taxonomiesCache != null && !taxonomiesCache.hasExpired() && !taxonomiesCache.getItem().isEmpty()) return;
+    taxonomiesCache = null;
+    vocabularyMap.clear();
     try {
       Response<List<Taxonomy>> response = service.listTaxonomies(token).execute();
       if (!response.isSuccessful())
         throw new IllegalStateException("Unable to read opal taxonomies: " + response.message());
-      taxonomies = response.body();
+      List<Taxonomy> taxonomies = response.body();
       // Vocabulary names in the form of attribute header: namespace::name.
       vocabularyMap = Maps.newHashMap();
       taxonomies.forEach(taxo -> taxo.getVocabularies()
           .forEach(voc -> vocabularyMap.put(normalize(taxo.getName() + "::" + voc.getName()), new String[]{taxo.getName(), voc.getName()})));
+      taxonomiesCache = new RestCache<>(taxonomies, cacheDelay);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

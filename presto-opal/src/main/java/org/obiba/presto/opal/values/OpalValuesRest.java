@@ -34,7 +34,7 @@ import static java.util.stream.Collectors.toList;
 
 public class OpalValuesRest extends OpalDatasourcesRest {
 
-  public static final int BATCH_SIZE = 10000;
+  static final int BATCH_SIZE = 10000;
 
   // schema table name vs. columns
   private Map<SchemaTableName, ConnectorTableMetadata> connectorTableMap = Maps.newHashMap();
@@ -42,8 +42,8 @@ public class OpalValuesRest extends OpalDatasourcesRest {
   // schema table name vs (column name vs. variable name)
   private Map<SchemaTableName, Map<String, Variable>> columnNameMap = Maps.newHashMap();
 
-  public OpalValuesRest(String url, String username, String password) {
-    super(url, username, password);
+  public OpalValuesRest(String url, String username, String password, int cacheDelay) {
+    super(url, username, password, cacheDelay);
   }
 
   @Override
@@ -99,6 +99,13 @@ public class OpalValuesRest extends OpalDatasourcesRest {
   @Override
   public RecordSet getRecordSet(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles) {
     return new OpalValuesRecordSet(this, schemaTableName, restColumnHandles);
+  }
+
+  @Override
+  protected synchronized void initialize() {
+    super.initialize();
+    connectorTableMap.clear();
+    columnNameMap.clear();
   }
 
   private Variable getOpalVariable(SchemaTableName schemaTableName, RestColumnHandle columnHandle) {

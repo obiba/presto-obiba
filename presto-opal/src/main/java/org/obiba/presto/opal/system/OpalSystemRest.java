@@ -44,8 +44,8 @@ public class OpalSystemRest extends OpalRest {
   // schema table name vs. columns
   private Map<SchemaTableName, ConnectorTableMetadata> connectorTableMap = Maps.newConcurrentMap();
 
-  public OpalSystemRest(String url, String username, String password) {
-    super(url, username, password);
+  public OpalSystemRest(String url, String username, String password, int cacheDelay) {
+    super(url, username, password, cacheDelay);
   }
 
   @Override
@@ -202,7 +202,7 @@ public class OpalSystemRest extends OpalRest {
 
   private void addLocaleTextColumns(ImmutableList.Builder<ColumnMetadata> builder) {
     for (String text : localeTexts) {
-      for (String language : opalConf.getLanguages()) {
+      for (String language : opalConfCache.getItem().getLanguages()) {
         builder.add(new ColumnMetadata(text + ":" + language, VarcharType.createUnboundedVarcharType()));
       }
     }

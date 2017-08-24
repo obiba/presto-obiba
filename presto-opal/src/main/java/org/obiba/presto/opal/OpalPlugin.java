@@ -33,12 +33,16 @@ public class OpalPlugin implements Plugin {
 
   private OpalRest createRestFactory(Map<String, String> config) {
     String catalogType = config.getOrDefault("opal.catalog-type", "values");
+    String opalUrl = config.get("opal.url");
+    String username = config.get("opal.username");
+    String password = config.get("opal.password");
+    int delay = Integer.parseInt(config.getOrDefault("opal.cache-delay", "300"));
     if ("values".equals(catalogType))
-      return new OpalValuesRest(config.get("opal.url"), config.get("opal.username"), config.get("opal.password"));
+      return new OpalValuesRest(opalUrl, username, password, delay);
     if ("variables".equals(catalogType))
-      return new OpalVariablesRest(config.get("opal.url"), config.get("opal.username"), config.get("opal.password"));
+      return new OpalVariablesRest(opalUrl, username, password, delay);
     if ("system".equals(catalogType))
-      return new OpalSystemRest(config.get("opal.url"), config.get("opal.username"), config.get("opal.password"));
-    return new OpalValuesRest(config.get("opal.url"), config.get("opal.username"), config.get("opal.password"));
+      return new OpalSystemRest(opalUrl, username, password, delay);
+    return new OpalValuesRest(opalUrl, username, password, delay);
   }
 }
