@@ -1,6 +1,7 @@
 # Presto OBiBa [![Build Status](http://ci.obiba.org/view/OBiBa%20Commons/job/presto-obiba/badge/icon)](http://ci.obiba.org/view/OBiBa%20Commons/job/presto-obiba/)
 
-[Presto](https://prestodb.io/) connectors implementation based on [OBiBa software](http://www.obiba.org). Demo is accessible at [https://presto-demo.obiba.org](https://presto-demo.obiba.org).
+[Presto](https://prestodb.io/) connectors implementation based on [OBiBa software](http://www.obiba.org). 
+The implementation of these connectors is based on the REST APIs of these software. Demo is accessible at [https://presto-demo.obiba.org](https://presto-demo.obiba.org).
 
 ## Presto Opal
 
