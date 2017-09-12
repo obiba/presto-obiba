@@ -65,7 +65,7 @@ public class OpalAdministrationQueriesTest
 
   @Test
   public void showTables() {
-    assertQuery("SHOW TABLES FROM demo.system", "VALUES 'taxonomy','vocabulary','term'");
+    assertQuery("SHOW TABLES FROM demo.system", "VALUES 'database','taxonomy','vocabulary','term'");
   }
 
   @Test

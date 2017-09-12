@@ -18,17 +18,19 @@ import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.SchemaTableName;
 import com.facebook.presto.spi.type.VarcharType;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import org.obiba.presto.RestCache;
+import org.obiba.presto.opal.model.LocaleText;
 import org.obiba.presto.opal.model.OpalConf;
 
 import java.util.List;
 
-abstract class TaxonomyItemTableMetadata extends ConnectorTableMetadata {
+abstract class TaxonomyItemTable extends ConnectorTableMetadata {
 
   private static final String[] localeTexts = new String[]{"title", "description", "keywords"};
 
-  TaxonomyItemTableMetadata(SchemaTableName table, List<ColumnMetadata> columns) {
+  TaxonomyItemTable(SchemaTableName table, List<ColumnMetadata> columns) {
     super(table, columns);
   }
 
@@ -38,5 +40,14 @@ abstract class TaxonomyItemTableMetadata extends ConnectorTableMetadata {
         builder.add(new ColumnMetadata(text + ":" + language, VarcharType.createUnboundedVarcharType()));
       }
     }
+  }
+
+  static String extractLocale(String columnName) {
+    return Splitter.on(":").splitToList(columnName).get(1);
+  }
+
+  static String findText(List<LocaleText> texts, String locale) {
+    if (texts == null || texts.isEmpty()) return null;
+    return texts.stream().filter(lt -> locale.equals(lt.getLocale())).map(LocaleText::getText).findFirst().orElse(null);
   }
 }

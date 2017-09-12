@@ -62,4 +62,8 @@ public interface OpalService {
   @GET("/ws/system/conf/taxonomies")
   Call<List<Taxonomy>> listTaxonomies(@Header("Authorization") String opalAuth);
 
+  @Headers({"Accept: application/json"})
+  @GET("/ws/system/databases?settings=true")
+  Call<List<Database>> listDatabases(@Header("Authorization") String opalAuth);
+
 }
