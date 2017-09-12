@@ -66,4 +66,9 @@ public interface OpalService {
   @GET("/ws/system/databases?settings=true")
   Call<List<Database>> listDatabases(@Header("Authorization") String opalAuth);
 
+  @Headers({"Accept: application/json"})
+  @GET("/ws/plugins")
+  Call<PluginPackages> getPlugins(@Header("Authorization") String opalAuth);
+
+
 }

@@ -10,7 +10,7 @@ Presto connector over a [Opal](http://www.obiba.org/pages/products/opal/) server
 This connector provides different types of catalogs:
 * catalog of values: provides for each `project` a schema and for each `table` a SQL table of individual values,
 * catalog of variables: provides for each `project` a schema and for each `table` a SQL table of variables,
-* catalog of system information: provides a `system` schema with SQL tables describing taxonomy, vocabulary and term objects.
+* catalog of system information: provides a `system` schema with SQL tables describing `database`, `plugin`, `taxonomy`, `vocabulary` and `term` objects.
 
 ### Configuration
 

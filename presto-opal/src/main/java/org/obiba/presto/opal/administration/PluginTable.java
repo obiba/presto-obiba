@@ -22,32 +22,32 @@ import com.facebook.presto.spi.type.VarcharType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.obiba.presto.opal.model.Database;
+import org.obiba.presto.opal.model.PluginPackages;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-class DatabaseTable extends ConnectorTableMetadata {
+class PluginTable extends ConnectorTableMetadata {
 
-  DatabaseTable(SchemaTableName table) {
+  PluginTable(SchemaTableName table) {
     super(table, createColumns());
   }
 
-  static Collection<? extends List<?>> getRows(List<String> columnNames, List<Database> databases) {
-    return databases.stream()
-        .map(db -> Lists.newArrayList(db.getName(), db.getUsage(), db.isDefaultStorage(), db.hasDatasource(), db.getType(), db.getUrl(), db.getUsername()))
+  static Collection<? extends List<?>> getRows(List<String> columnNames, PluginPackages packages) {
+    return packages.getPackages().stream()
+        .map(pp -> Lists.newArrayList(pp.getName(), pp.getType(), pp.getTitle(), pp.getDescription(), pp.getVersion(), pp.getOpalVersion()))
         .collect(Collectors.toList());
   }
 
   private static List<ColumnMetadata> createColumns() {
     ImmutableList.Builder<ColumnMetadata> builder = ImmutableList.<ColumnMetadata>builder()
         .add(new ColumnMetadata("name", VarcharType.createUnboundedVarcharType()))
-        .add(new ColumnMetadata("usage", VarcharType.createUnboundedVarcharType()))
-        .add(new ColumnMetadata("default_storage", BooleanType.BOOLEAN))
-        .add(new ColumnMetadata("has_datasource", BooleanType.BOOLEAN))
         .add(new ColumnMetadata("type", VarcharType.createUnboundedVarcharType()))
-        .add(new ColumnMetadata("url", VarcharType.createUnboundedVarcharType()))
-        .add(new ColumnMetadata("username", VarcharType.createUnboundedVarcharType()));
+        .add(new ColumnMetadata("title", VarcharType.createUnboundedVarcharType()))
+        .add(new ColumnMetadata("description", VarcharType.createUnboundedVarcharType()))
+        .add(new ColumnMetadata("version", VarcharType.createUnboundedVarcharType()))
+        .add(new ColumnMetadata("opalVersion", VarcharType.createUnboundedVarcharType()));
     return builder.build();
   }
 

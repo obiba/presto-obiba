@@ -23,6 +23,7 @@ import com.google.common.collect.Maps;
 import org.obiba.presto.RestColumnHandle;
 import org.obiba.presto.opal.OpalRest;
 import org.obiba.presto.opal.model.Database;
+import org.obiba.presto.opal.model.PluginPackages;
 import org.obiba.presto.opal.model.Taxonomy;
 import retrofit2.Response;
 
@@ -58,6 +59,8 @@ public class OpalAdministrationRest extends OpalRest {
       connectorTableMetadata = new TermTable(schemaTableName, opalConfCache);
     else if ("database".equals(schemaTableName.getTableName()))
       connectorTableMetadata = new DatabaseTable(schemaTableName);
+    else if ("plugin".equals(schemaTableName.getTableName()))
+      connectorTableMetadata = new PluginTable(schemaTableName);
     else
       throw new RuntimeException("Unknown opal system schema table: " + schemaTableName);
     connectorTableMap.put(schemaTableName, connectorTableMetadata);
@@ -75,7 +78,8 @@ public class OpalAdministrationRest extends OpalRest {
       return ImmutableList.of(new SchemaTableName(schema, "taxonomy"),
           new SchemaTableName(schema, "vocabulary"),
           new SchemaTableName(schema, "term"),
-          new SchemaTableName(schema, "database"));
+          new SchemaTableName(schema, "database"),
+          new SchemaTableName(schema, "plugin"));
     else
       return Lists.newArrayList();
   }
@@ -90,6 +94,17 @@ public class OpalAdministrationRest extends OpalRest {
           throw new IllegalStateException("Unable to read databases: " + execute.message());
         List<String> columnNames = restColumnHandles.stream().map(RestColumnHandle::getName).collect(Collectors.toList());
         return DatabaseTable.getRows(columnNames, execute.body());
+      } catch (IOException e) {
+        throw new PrestoException(GENERIC_INTERNAL_ERROR, e);
+      }
+    }
+    else if ("plugin".equals(schemaTableName.getTableName())) {
+      try {
+        Response<PluginPackages> execute = service.getPlugins(token).execute();
+        if (!execute.isSuccessful())
+          throw new IllegalStateException("Unable to read databases: " + execute.message());
+        List<String> columnNames = restColumnHandles.stream().map(RestColumnHandle::getName).collect(Collectors.toList());
+        return PluginTable.getRows(columnNames, execute.body());
       } catch (IOException e) {
         throw new PrestoException(GENERIC_INTERNAL_ERROR, e);
       }
