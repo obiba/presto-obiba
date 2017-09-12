@@ -18,7 +18,7 @@ import com.facebook.presto.spi.Plugin;
 import com.facebook.presto.spi.connector.ConnectorFactory;
 import com.google.common.collect.ImmutableList;
 import org.obiba.presto.RestConnectorFactory;
-import org.obiba.presto.opal.system.OpalSystemRest;
+import org.obiba.presto.opal.administration.OpalAdministrationRest;
 import org.obiba.presto.opal.values.OpalValuesRest;
 import org.obiba.presto.opal.variables.OpalVariablesRest;
 
@@ -41,8 +41,8 @@ public class OpalPlugin implements Plugin {
       return new OpalValuesRest(opalUrl, username, password, delay);
     if ("variables".equals(catalogType))
       return new OpalVariablesRest(opalUrl, username, password, delay);
-    if ("system".equals(catalogType))
-      return new OpalSystemRest(opalUrl, username, password, delay);
+    if ("system".equals(catalogType) || "administration".equals(catalogType))
+      return new OpalAdministrationRest(opalUrl, username, password, delay);
     return new OpalValuesRest(opalUrl, username, password, delay);
   }
 }

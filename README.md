@@ -10,7 +10,7 @@ Presto connector over a [Opal](http://www.obiba.org/pages/products/opal/) server
 This connector provides different types of catalogs:
 * catalog of values: provides for each `project` a schema and for each `table` a SQL table of individual values,
 * catalog of variables: provides for each `project` a schema and for each `table` a SQL table of variables,
-* catalog of system information: provides a `taxonomies` with SQL tables describing taxonomy, vocabulary and term objects.
+* catalog of system information: provides a `system` schema with SQL tables describing taxonomy, vocabulary and term objects.
 
 ### Configuration
 
@@ -30,7 +30,7 @@ The configuration keys are:
 | opal.url          | Opal server URL |
 | opal.username     | Opal username, preferably with read only access rights |
 | opal.password     | Opal username password |
-| opal.catalog-type | Type of catalog: `values`, `variables` or `system`. Optional, default is `values`  |
+| opal.catalog-type | Type of catalog: `values`, `variables` or `administration`. Optional, default is `values`  |
 | opal.cache-delay  | Opal meta-data are cached during the specified delay (in seconds). Optional, default is `300` (5 minutes) |
 
 Note that the meta-data names are normalized to fit Presto naming scheme: lower case, reserved characters etc. Despite this normalization, the connector ensures that there is no name conflict by appending an incremental number `_<n>`.

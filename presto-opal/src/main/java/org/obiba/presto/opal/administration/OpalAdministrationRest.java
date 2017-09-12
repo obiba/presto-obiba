@@ -12,14 +12,11 @@
  * limitations under the License.
  */
 
-package org.obiba.presto.opal.system;
+package org.obiba.presto.opal.administration;
 
-import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.SchemaTableName;
-import com.facebook.presto.spi.type.BooleanType;
-import com.facebook.presto.spi.type.VarcharType;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -38,14 +35,14 @@ import java.util.stream.Collectors;
 
 import static com.facebook.presto.spi.StandardErrorCode.GENERIC_INTERNAL_ERROR;
 
-public class OpalSystemRest extends OpalRest {
+public class OpalAdministrationRest extends OpalRest {
 
   private static final String[] localeTexts = new String[]{"title", "description", "keywords"};
 
   // schema table name vs. columns
   private Map<SchemaTableName, ConnectorTableMetadata> connectorTableMap = Maps.newConcurrentMap();
 
-  public OpalSystemRest(String url, String username, String password, int cacheDelay) {
+  public OpalAdministrationRest(String url, String username, String password, int cacheDelay) {
     super(url, username, password, cacheDelay);
   }
 
@@ -55,11 +52,11 @@ public class OpalSystemRest extends OpalRest {
     if (connectorTableMap.containsKey(schemaTableName)) return connectorTableMap.get(schemaTableName);
     ConnectorTableMetadata connectorTableMetadata;
     if ("taxonomy".equals(schemaTableName.getTableName()))
-      connectorTableMetadata = new ConnectorTableMetadata(schemaTableName, createTaxonomyColumns());
+      connectorTableMetadata = new TaxonomyTableMetadata(schemaTableName, opalConfCache);
     else if ("vocabulary".equals(schemaTableName.getTableName()))
-      connectorTableMetadata = new ConnectorTableMetadata(schemaTableName, createVocabularyColumns());
+      connectorTableMetadata = new VocabularyTableMetadata(schemaTableName, opalConfCache);
     else if ("term".equals(schemaTableName.getTableName()))
-      connectorTableMetadata = new ConnectorTableMetadata(schemaTableName, createTermColumns());
+      connectorTableMetadata = new TermTableMetadata(schemaTableName, opalConfCache);
     else
       throw new RuntimeException("Unknown opal system schema table: " + schemaTableName);
     connectorTableMap.put(schemaTableName, connectorTableMetadata);
@@ -68,14 +65,17 @@ public class OpalSystemRest extends OpalRest {
 
   @Override
   public List<String> listSchemas() {
-    return ImmutableList.of("taxonomies");
+    return ImmutableList.of("system");
   }
 
   @Override
   public List<SchemaTableName> listTables(String schema) {
-    return ImmutableList.of(new SchemaTableName("taxonomies", "taxonomy"),
-        new SchemaTableName("taxonomies", "vocabulary"),
-        new SchemaTableName("taxonomies", "term"));
+    if ("system".equals(schema))
+      return ImmutableList.of(new SchemaTableName(schema, "taxonomy"),
+          new SchemaTableName(schema, "vocabulary"),
+          new SchemaTableName(schema, "term"));
+    else
+      return Lists.newArrayList();
   }
 
   @Override
@@ -120,48 +120,46 @@ public class OpalSystemRest extends OpalRest {
 
   private Collection<? extends List<?>> getVocabularyRows(List<String> columnNames, List<Taxonomy> taxonomies) {
     Collection<List<?>> rows = Lists.newArrayList();
-    taxonomies.forEach(taxo -> {
-      taxo.getVocabularies().forEach(voc -> {
-        List<Object> row = Lists.newArrayList();
-        for (String colName : columnNames) {
-          if ("name".equals(colName)) row.add(voc.getName());
-          else if ("taxonomy".equals(colName)) row.add(taxo.getName());
-          else if (colName.startsWith("title:"))
-            row.add(findText(voc.getTitle(), extractLocale(colName)));
-          else if (colName.startsWith("description:"))
-            row.add(findText(voc.getDescription(), extractLocale(colName)));
-          else if (colName.startsWith("keywords:"))
-            row.add(findText(voc.getKeywords(), extractLocale(colName)));
-          else row.add(null); // TODO parse attribute
-        }
-        rows.add(row);
-      });
-    });
+    taxonomies.forEach(taxo ->
+        taxo.getVocabularies().forEach(voc -> {
+          List<Object> row = Lists.newArrayList();
+          for (String colName : columnNames) {
+            if ("name".equals(colName)) row.add(voc.getName());
+            else if ("taxonomy".equals(colName)) row.add(taxo.getName());
+            else if (colName.startsWith("title:"))
+              row.add(findText(voc.getTitle(), extractLocale(colName)));
+            else if (colName.startsWith("description:"))
+              row.add(findText(voc.getDescription(), extractLocale(colName)));
+            else if (colName.startsWith("keywords:"))
+              row.add(findText(voc.getKeywords(), extractLocale(colName)));
+            else row.add(null); // TODO parse attribute
+          }
+          rows.add(row);
+        }));
     return rows;
   }
 
   private Collection<? extends List<?>> getTermRows(List<String> columnNames, List<Taxonomy> taxonomies) {
     Collection<List<?>> rows = Lists.newArrayList();
-    taxonomies.forEach(taxo -> {
-      taxo.getVocabularies().forEach(voc -> {
-        voc.getTerms().forEach(term -> {
-          List<Object> row = Lists.newArrayList();
-          for (String colName : columnNames) {
-            if ("name".equals(colName)) row.add(term.getName());
-            else if ("taxonomy".equals(colName)) row.add(taxo.getName());
-            else if ("vocabulary".equals(colName)) row.add(voc.getName());
-            else if (colName.startsWith("title:"))
-              row.add(findText(term.getTitle(), extractLocale(colName)));
-            else if (colName.startsWith("description:"))
-              row.add(findText(term.getDescription(), extractLocale(colName)));
-            else if (colName.startsWith("keywords:"))
-              row.add(findText(term.getKeywords(), extractLocale(colName)));
-            else row.add(null); // TODO parse attribute
-          }
-          rows.add(row);
-        });
-      });
-    });
+    taxonomies.forEach(taxo ->
+        taxo.getVocabularies().forEach(voc -> {
+          voc.getTerms().forEach(term -> {
+            List<Object> row = Lists.newArrayList();
+            for (String colName : columnNames) {
+              if ("name".equals(colName)) row.add(term.getName());
+              else if ("taxonomy".equals(colName)) row.add(taxo.getName());
+              else if ("vocabulary".equals(colName)) row.add(voc.getName());
+              else if (colName.startsWith("title:"))
+                row.add(findText(term.getTitle(), extractLocale(colName)));
+              else if (colName.startsWith("description:"))
+                row.add(findText(term.getDescription(), extractLocale(colName)));
+              else if (colName.startsWith("keywords:"))
+                row.add(findText(term.getKeywords(), extractLocale(colName)));
+              else row.add(null); // TODO parse attribute
+            }
+            rows.add(row);
+          });
+        }));
     return rows;
   }
 
@@ -172,41 +170,6 @@ public class OpalSystemRest extends OpalRest {
   private String findText(List<LocaleText> texts, String locale) {
     if (texts == null || texts.isEmpty()) return null;
     return texts.stream().filter(lt -> locale.equals(lt.getLocale())).map(LocaleText::getText).findFirst().orElse(null);
-  }
-
-  private List<ColumnMetadata> createTaxonomyColumns() {
-    ImmutableList.Builder<ColumnMetadata> builder = ImmutableList.<ColumnMetadata>builder()
-        .add(new ColumnMetadata("name", VarcharType.createUnboundedVarcharType()))
-        .add(new ColumnMetadata("author", VarcharType.createUnboundedVarcharType()))
-        .add(new ColumnMetadata("license", VarcharType.createUnboundedVarcharType()));
-    addLocaleTextColumns(builder);
-    return builder.build();
-  }
-
-  private List<ColumnMetadata> createVocabularyColumns() {
-    ImmutableList.Builder<ColumnMetadata> builder = ImmutableList.<ColumnMetadata>builder()
-        .add(new ColumnMetadata("name", VarcharType.createUnboundedVarcharType()))
-        .add(new ColumnMetadata("taxonomy", VarcharType.createUnboundedVarcharType()))
-        .add(new ColumnMetadata("repeatable", BooleanType.BOOLEAN));
-    addLocaleTextColumns(builder);
-    return builder.build();
-  }
-
-  private List<ColumnMetadata> createTermColumns() {
-    ImmutableList.Builder<ColumnMetadata> builder = ImmutableList.<ColumnMetadata>builder()
-        .add(new ColumnMetadata("name", VarcharType.createUnboundedVarcharType()))
-        .add(new ColumnMetadata("taxonomy", VarcharType.createUnboundedVarcharType()))
-        .add(new ColumnMetadata("vocabulary", VarcharType.createUnboundedVarcharType()));
-    addLocaleTextColumns(builder);
-    return builder.build();
-  }
-
-  private void addLocaleTextColumns(ImmutableList.Builder<ColumnMetadata> builder) {
-    for (String text : localeTexts) {
-      for (String language : opalConfCache.getItem().getLanguages()) {
-        builder.add(new ColumnMetadata(text + ":" + language, VarcharType.createUnboundedVarcharType()));
-      }
-    }
   }
 
 }

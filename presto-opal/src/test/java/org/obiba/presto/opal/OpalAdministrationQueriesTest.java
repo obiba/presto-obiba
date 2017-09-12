@@ -25,9 +25,9 @@ import org.testng.annotations.Test;
 
 import static com.facebook.presto.testing.TestingSession.testSessionBuilder;
 
-public class OpalSystemQueriesTest
+public class OpalAdministrationQueriesTest
     extends AbstractTestQueryFramework {
-  protected OpalSystemQueriesTest()
+  protected OpalAdministrationQueriesTest()
       throws Exception {
     super(createLocalQueryRunner());
   }
@@ -36,7 +36,7 @@ public class OpalSystemQueriesTest
       throws Exception {
     Session defaultSession = testSessionBuilder()
         .setCatalog("demo")
-        .setSchema("taxonomies")
+        .setSchema("system")
         .build();
 
     QueryRunner queryRunner = new DistributedQueryRunner(defaultSession, 1);
@@ -46,7 +46,7 @@ public class OpalSystemQueriesTest
         "demo",
         "opal",
         ImmutableMap.of("opal.url", "https://opal-demo.obiba.org/",
-            "opal.catalog-type", "system",
+            "opal.catalog-type", "administration",
             "opal.username", "administrator",
             "opal.password", "password"));
 
@@ -60,17 +60,17 @@ public class OpalSystemQueriesTest
 
   @Test
   public void showSchemas() {
-    assertQuery("SHOW SCHEMAS FROM demo", "VALUES 'taxonomies','information_schema'");
+    assertQuery("SHOW SCHEMAS FROM demo", "VALUES 'system','information_schema'");
   }
 
   @Test
   public void showTables() {
-    assertQuery("SHOW TABLES FROM demo.taxonomies", "VALUES 'taxonomy','vocabulary','term'");
+    assertQuery("SHOW TABLES FROM demo.system", "VALUES 'taxonomy','vocabulary','term'");
   }
 
   @Test
   public void showColumns() {
-    MaterializedResult result = computeActual("SHOW COLUMNS FROM demo.taxonomies.taxonomy");
+    MaterializedResult result = computeActual("SHOW COLUMNS FROM demo.system.taxonomy");
     Assert.assertEquals(result.getRowCount(), 6);
     // TODO check data types
   }
