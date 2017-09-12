@@ -24,6 +24,7 @@ import org.obiba.presto.RestColumnHandle;
 import org.obiba.presto.opal.OpalRest;
 import org.obiba.presto.opal.model.Database;
 import org.obiba.presto.opal.model.PluginPackages;
+import org.obiba.presto.opal.model.Project;
 import org.obiba.presto.opal.model.Taxonomy;
 import retrofit2.Response;
 
@@ -61,6 +62,8 @@ public class OpalAdministrationRest extends OpalRest {
       connectorTableMetadata = new DatabaseTable(schemaTableName);
     else if ("plugin".equals(schemaTableName.getTableName()))
       connectorTableMetadata = new PluginTable(schemaTableName);
+    else if ("project".equals(schemaTableName.getTableName()))
+      connectorTableMetadata = new ProjectTable(schemaTableName);
     else
       throw new RuntimeException("Unknown opal system schema table: " + schemaTableName);
     connectorTableMap.put(schemaTableName, connectorTableMetadata);
@@ -79,7 +82,8 @@ public class OpalAdministrationRest extends OpalRest {
           new SchemaTableName(schema, "vocabulary"),
           new SchemaTableName(schema, "term"),
           new SchemaTableName(schema, "database"),
-          new SchemaTableName(schema, "plugin"));
+          new SchemaTableName(schema, "plugin"),
+          new SchemaTableName(schema, "project"));
     else
       return Lists.newArrayList();
   }
@@ -100,11 +104,22 @@ public class OpalAdministrationRest extends OpalRest {
     }
     else if ("plugin".equals(schemaTableName.getTableName())) {
       try {
-        Response<PluginPackages> execute = service.getPlugins(token).execute();
+        Response<PluginPackages> execute = service.getPluginPackages(token).execute();
         if (!execute.isSuccessful())
           throw new IllegalStateException("Unable to read databases: " + execute.message());
         List<String> columnNames = restColumnHandles.stream().map(RestColumnHandle::getName).collect(Collectors.toList());
         return PluginTable.getRows(columnNames, execute.body());
+      } catch (IOException e) {
+        throw new PrestoException(GENERIC_INTERNAL_ERROR, e);
+      }
+    }
+    else if ("project".equals(schemaTableName.getTableName())) {
+      try {
+        Response<List<Project>> execute = service.listProjects(token).execute();
+        if (!execute.isSuccessful())
+          throw new IllegalStateException("Unable to read databases: " + execute.message());
+        List<String> columnNames = restColumnHandles.stream().map(RestColumnHandle::getName).collect(Collectors.toList());
+        return ProjectTable.getRows(columnNames, execute.body());
       } catch (IOException e) {
         throw new PrestoException(GENERIC_INTERNAL_ERROR, e);
       }

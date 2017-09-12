@@ -68,7 +68,10 @@ public interface OpalService {
 
   @Headers({"Accept: application/json"})
   @GET("/ws/plugins")
-  Call<PluginPackages> getPlugins(@Header("Authorization") String opalAuth);
+  Call<PluginPackages> getPluginPackages(@Header("Authorization") String opalAuth);
 
+  @Headers({"Accept: application/json"})
+  @GET("/ws/projects")
+  Call<List<Project>> listProjects(@Header("Authorization") String opalAuth);
 
 }
