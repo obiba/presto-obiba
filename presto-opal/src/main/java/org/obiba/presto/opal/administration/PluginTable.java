@@ -47,7 +47,7 @@ class PluginTable extends ConnectorTableMetadata {
         .add(new ColumnMetadata("title", VarcharType.createUnboundedVarcharType()))
         .add(new ColumnMetadata("description", VarcharType.createUnboundedVarcharType()))
         .add(new ColumnMetadata("version", VarcharType.createUnboundedVarcharType()))
-        .add(new ColumnMetadata("opalVersion", VarcharType.createUnboundedVarcharType()));
+        .add(new ColumnMetadata("opal_version", VarcharType.createUnboundedVarcharType()));
     return builder.build();
   }
 
