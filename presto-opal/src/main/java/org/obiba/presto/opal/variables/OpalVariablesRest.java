@@ -73,7 +73,8 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
         .add(new ColumnMetadata("referenced_entity_type", VarcharType.createUnboundedVarcharType()))
         .add(new ColumnMetadata("unit", VarcharType.createUnboundedVarcharType()))
         .add(new ColumnMetadata("index", IntegerType.INTEGER))
-        .add(new ColumnMetadata("categories", VarcharType.createUnboundedVarcharType()));
+        .add(new ColumnMetadata("categories", VarcharType.createUnboundedVarcharType()))
+        .add(new ColumnMetadata("categories_missing", VarcharType.createUnboundedVarcharType()));
     for (String language : opalConfCache.getItem().getLanguages()) {
       builder.add(new ColumnMetadata("categories_label:" + language, VarcharType.createUnboundedVarcharType()));
     }
@@ -113,6 +114,9 @@ public class OpalVariablesRest extends OpalDatasourcesRest {
           else if ("index".equals(colName)) row.add(v.getIndex());
           else if ("categories".equals(colName)) row.add(v.hasCategories() ?
               v.getCategories().stream().map(Category::getName)
+                  .collect(Collectors.joining("|")) : null);
+          else if ("categories_missing".equals(colName)) row.add(v.hasCategories() ?
+              v.getCategories().stream().map(cat -> cat.isMissing() ? "1" : "0")
                   .collect(Collectors.joining("|")) : null);
           else if (colName.startsWith("categories_label:")) {
             if (!v.hasCategories()) row.add(null);
