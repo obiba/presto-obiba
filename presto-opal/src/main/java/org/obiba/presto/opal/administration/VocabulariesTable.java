@@ -16,6 +16,7 @@ package org.obiba.presto.opal.administration;
 
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.SchemaTableName;
+import com.facebook.presto.spi.type.BooleanType;
 import com.facebook.presto.spi.type.VarcharType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -25,38 +26,41 @@ import org.obiba.presto.opal.model.Taxonomy;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
-class TaxonomyTable extends TaxonomyItemTable {
+class VocabulariesTable extends TaxonomyItemTable {
 
-  TaxonomyTable(SchemaTableName table, RestCache<OpalConf> opalConfCache) {
+  static final String NAME = "vocabularies";
+
+  VocabulariesTable(SchemaTableName table, RestCache<OpalConf> opalConfCache) {
     super(table, createColumns(opalConfCache));
   }
 
   static Collection<? extends List<?>> getRows(List<String> columnNames, List<Taxonomy> taxonomies) {
-    return taxonomies.stream().map(taxo -> {
-      List<Object> row = Lists.newArrayList();
-      for (String colName : columnNames) {
-        if ("name".equals(colName)) row.add(taxo.getName());
-        else if ("author".equals(colName)) row.add(taxo.getAuthor());
-        else if ("license".equals(colName)) row.add(taxo.getLicense());
-        else if (colName.startsWith("title:"))
-          row.add(findText(taxo.getTitle(), extractLocale(colName)));
-        else if (colName.startsWith("description:"))
-          row.add(findText(taxo.getDescription(), extractLocale(colName)));
-        else if (colName.startsWith("keywords:"))
-          row.add(findText(taxo.getKeywords(), extractLocale(colName)));
-        else row.add(null); // TODO parse attribute
-      }
-      return row;
-    }).collect(Collectors.toList());
+    Collection<List<?>> rows = Lists.newArrayList();
+    taxonomies.forEach(taxo ->
+        taxo.getVocabularies().forEach(voc -> {
+          List<Object> row = Lists.newArrayList();
+          for (String colName : columnNames) {
+            if ("name".equals(colName)) row.add(voc.getName());
+            else if ("taxonomy".equals(colName)) row.add(taxo.getName());
+            else if (colName.startsWith("title:"))
+              row.add(findText(voc.getTitle(), extractLocale(colName)));
+            else if (colName.startsWith("description:"))
+              row.add(findText(voc.getDescription(), extractLocale(colName)));
+            else if (colName.startsWith("keywords:"))
+              row.add(findText(voc.getKeywords(), extractLocale(colName)));
+            else row.add(null); // TODO parse attribute
+          }
+          rows.add(row);
+        }));
+    return rows;
   }
 
   private static List<ColumnMetadata> createColumns(RestCache<OpalConf> opalConfCache) {
     ImmutableList.Builder<ColumnMetadata> builder = ImmutableList.<ColumnMetadata>builder()
         .add(new ColumnMetadata("name", VarcharType.createUnboundedVarcharType()))
-        .add(new ColumnMetadata("author", VarcharType.createUnboundedVarcharType()))
-        .add(new ColumnMetadata("license", VarcharType.createUnboundedVarcharType()));
+        .add(new ColumnMetadata("taxonomy", VarcharType.createUnboundedVarcharType()))
+        .add(new ColumnMetadata("repeatable", BooleanType.BOOLEAN));
     addLocaleTextColumns(opalConfCache, builder);
     return builder.build();
   }

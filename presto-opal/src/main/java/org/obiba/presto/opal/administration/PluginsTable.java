@@ -28,9 +28,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-class PluginTable extends ConnectorTableMetadata {
+class PluginsTable extends ConnectorTableMetadata {
 
-  PluginTable(SchemaTableName table) {
+  static final String NAME = "plugins";
+
+  PluginsTable(SchemaTableName table) {
     super(table, createColumns());
   }
 

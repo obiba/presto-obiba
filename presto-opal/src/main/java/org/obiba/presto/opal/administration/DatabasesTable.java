@@ -27,9 +27,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-class DatabaseTable extends ConnectorTableMetadata {
+class DatabasesTable extends ConnectorTableMetadata {
 
-  DatabaseTable(SchemaTableName table) {
+  static final String NAME = "databases";
+
+  DatabasesTable(SchemaTableName table) {
     super(table, createColumns());
   }
 

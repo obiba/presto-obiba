@@ -46,7 +46,7 @@ public class OpalServiceTest {
     Response<List<Datasource>> response = service.listDatasources(getOpalAuth()).execute();
     if (!response.isSuccessful()) Assert.fail();
     List<Datasource> datasources = response.body();
-    Assert.assertEquals(datasources.size(), 13);
+    Assert.assertEquals(datasources.size(), 15);
   }
 
   @Test

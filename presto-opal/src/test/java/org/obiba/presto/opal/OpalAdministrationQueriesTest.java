@@ -65,24 +65,24 @@ public class OpalAdministrationQueriesTest
 
   @Test
   public void showTables() {
-    assertQuery("SHOW TABLES FROM demo.system", "VALUES 'database','plugin','project','taxonomy','vocabulary','term'");
+    assertQuery("SHOW TABLES FROM demo.system", "VALUES 'databases','plugins','projects','taxonomies','vocabularies','terms'");
   }
 
   @Test
   public void showColumns() {
-    MaterializedResult result = computeActual("SHOW COLUMNS FROM demo.system.taxonomy");
+    MaterializedResult result = computeActual("SHOW COLUMNS FROM demo.system.taxonomies");
     Assert.assertEquals(result.getRowCount(), 6);
     // TODO check data types
   }
 
   @Test
   public void selectAllFromDefault() {
-    computeActual("SELECT * FROM taxonomy");
+    computeActual("SELECT * FROM taxonomies");
   }
 
   @Test
   public void selectColumnFromDefault() {
-    MaterializedResult result = computeActual("SELECT name FROM vocabulary LIMIT 10");
+    MaterializedResult result = computeActual("SELECT name FROM vocabularies LIMIT 10");
     Assert.assertEquals(result.getRowCount(), 10);
   }
 

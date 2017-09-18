@@ -60,7 +60,7 @@ public class OpalVariablesQueriesTest
 
   @Test
   public void showSchemas() {
-    assertQuery("SHOW SCHEMAS FROM demo", "VALUES 'cls','clsa','cptp','datashield','fnac','frele','heliad','information_schema','lasa','lbls','nuage','path','ship','ulsam'");
+    assertQuery("SHOW SCHEMAS FROM demo", "VALUES 'cag','chpt','cls','clsa','cptp','datashield','fnac','frele','heliad','information_schema','lasa','lbls','nuage','path','ship','ulsam'");
   }
 
   @Test

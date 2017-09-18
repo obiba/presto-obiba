@@ -29,9 +29,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-class ProjectTable extends ConnectorTableMetadata {
+class ProjectsTable extends ConnectorTableMetadata {
 
-  ProjectTable(SchemaTableName table) {
+  static final String NAME = "projects";
+
+  ProjectsTable(SchemaTableName table) {
     super(table, createColumns());
   }
 

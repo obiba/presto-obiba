@@ -38,8 +38,6 @@ import static com.facebook.presto.spi.StandardErrorCode.GENERIC_INTERNAL_ERROR;
 
 public class OpalAdministrationRest extends OpalRest {
 
-  private static final String[] localeTexts = new String[]{"title", "description", "keywords"};
-
   // schema table name vs. columns
   private Map<SchemaTableName, ConnectorTableMetadata> connectorTableMap = Maps.newConcurrentMap();
 
@@ -52,18 +50,18 @@ public class OpalAdministrationRest extends OpalRest {
     initialize();
     if (connectorTableMap.containsKey(schemaTableName)) return connectorTableMap.get(schemaTableName);
     ConnectorTableMetadata connectorTableMetadata;
-    if ("taxonomy".equals(schemaTableName.getTableName()))
-      connectorTableMetadata = new TaxonomyTable(schemaTableName, opalConfCache);
-    else if ("vocabulary".equals(schemaTableName.getTableName()))
-      connectorTableMetadata = new VocabularyTable(schemaTableName, opalConfCache);
-    else if ("term".equals(schemaTableName.getTableName()))
-      connectorTableMetadata = new TermTable(schemaTableName, opalConfCache);
-    else if ("database".equals(schemaTableName.getTableName()))
-      connectorTableMetadata = new DatabaseTable(schemaTableName);
-    else if ("plugin".equals(schemaTableName.getTableName()))
-      connectorTableMetadata = new PluginTable(schemaTableName);
-    else if ("project".equals(schemaTableName.getTableName()))
-      connectorTableMetadata = new ProjectTable(schemaTableName);
+    if (TaxonomiesTable.NAME.equals(schemaTableName.getTableName()))
+      connectorTableMetadata = new TaxonomiesTable(schemaTableName, opalConfCache);
+    else if (VocabulariesTable.NAME.equals(schemaTableName.getTableName()))
+      connectorTableMetadata = new VocabulariesTable(schemaTableName, opalConfCache);
+    else if (TermsTable.NAME.equals(schemaTableName.getTableName()))
+      connectorTableMetadata = new TermsTable(schemaTableName, opalConfCache);
+    else if (DatabasesTable.NAME.equals(schemaTableName.getTableName()))
+      connectorTableMetadata = new DatabasesTable(schemaTableName);
+    else if (PluginsTable.NAME.equals(schemaTableName.getTableName()))
+      connectorTableMetadata = new PluginsTable(schemaTableName);
+    else if (ProjectsTable.NAME.equals(schemaTableName.getTableName()))
+      connectorTableMetadata = new ProjectsTable(schemaTableName);
     else
       throw new RuntimeException("Unknown opal system schema table: " + schemaTableName);
     connectorTableMap.put(schemaTableName, connectorTableMetadata);
@@ -78,12 +76,12 @@ public class OpalAdministrationRest extends OpalRest {
   @Override
   public List<SchemaTableName> listTables(String schema) {
     if ("system".equals(schema))
-      return ImmutableList.of(new SchemaTableName(schema, "taxonomy"),
-          new SchemaTableName(schema, "vocabulary"),
-          new SchemaTableName(schema, "term"),
-          new SchemaTableName(schema, "database"),
-          new SchemaTableName(schema, "plugin"),
-          new SchemaTableName(schema, "project"));
+      return ImmutableList.of(new SchemaTableName(schema, TaxonomiesTable.NAME),
+          new SchemaTableName(schema, VocabulariesTable.NAME),
+          new SchemaTableName(schema, TermsTable.NAME),
+          new SchemaTableName(schema, DatabasesTable.NAME),
+          new SchemaTableName(schema, PluginsTable.NAME),
+          new SchemaTableName(schema, ProjectsTable.NAME));
     else
       return Lists.newArrayList();
   }
@@ -91,35 +89,35 @@ public class OpalAdministrationRest extends OpalRest {
   @Override
   public Collection<? extends List<?>> getRows(SchemaTableName schemaTableName, List<RestColumnHandle> restColumnHandles) {
     initialize();
-    if ("database".equals(schemaTableName.getTableName())) {
+    if (DatabasesTable.NAME.equals(schemaTableName.getTableName())) {
       try {
         Response<List<Database>> execute = service.listDatabases(token).execute();
         if (!execute.isSuccessful())
           throw new IllegalStateException("Unable to read databases: " + execute.message());
         List<String> columnNames = restColumnHandles.stream().map(RestColumnHandle::getName).collect(Collectors.toList());
-        return DatabaseTable.getRows(columnNames, execute.body());
+        return DatabasesTable.getRows(columnNames, execute.body());
       } catch (IOException e) {
         throw new PrestoException(GENERIC_INTERNAL_ERROR, e);
       }
     }
-    else if ("plugin".equals(schemaTableName.getTableName())) {
+    else if (PluginsTable.NAME.equals(schemaTableName.getTableName())) {
       try {
         Response<PluginPackages> execute = service.getPluginPackages(token).execute();
         if (!execute.isSuccessful())
           throw new IllegalStateException("Unable to read databases: " + execute.message());
         List<String> columnNames = restColumnHandles.stream().map(RestColumnHandle::getName).collect(Collectors.toList());
-        return PluginTable.getRows(columnNames, execute.body());
+        return PluginsTable.getRows(columnNames, execute.body());
       } catch (IOException e) {
         throw new PrestoException(GENERIC_INTERNAL_ERROR, e);
       }
     }
-    else if ("project".equals(schemaTableName.getTableName())) {
+    else if (ProjectsTable.NAME.equals(schemaTableName.getTableName())) {
       try {
         Response<List<Project>> execute = service.listProjects(token).execute();
         if (!execute.isSuccessful())
           throw new IllegalStateException("Unable to read databases: " + execute.message());
         List<String> columnNames = restColumnHandles.stream().map(RestColumnHandle::getName).collect(Collectors.toList());
-        return ProjectTable.getRows(columnNames, execute.body());
+        return ProjectsTable.getRows(columnNames, execute.body());
       } catch (IOException e) {
         throw new PrestoException(GENERIC_INTERNAL_ERROR, e);
       }
@@ -133,12 +131,12 @@ public class OpalAdministrationRest extends OpalRest {
       if (!execute.isSuccessful())
         throw new IllegalStateException("Unable to read taxonomies: " + execute.message());
       List<String> columnNames = restColumnHandles.stream().map(RestColumnHandle::getName).collect(Collectors.toList());
-      if ("taxonomy".equals(schemaTableName.getTableName()))
-        return TaxonomyTable.getRows(columnNames, execute.body());
-      if ("vocabulary".equals(schemaTableName.getTableName()))
-        return VocabularyTable.getRows(columnNames, execute.body());
-      if ("term".equals(schemaTableName.getTableName()))
-        return TermTable.getRows(columnNames, execute.body());
+      if (TaxonomiesTable.NAME.equals(schemaTableName.getTableName()))
+        return TaxonomiesTable.getRows(columnNames, execute.body());
+      if (VocabulariesTable.NAME.equals(schemaTableName.getTableName()))
+        return VocabulariesTable.getRows(columnNames, execute.body());
+      if (TermsTable.NAME.equals(schemaTableName.getTableName()))
+        return TermsTable.getRows(columnNames, execute.body());
     } catch (IOException e) {
       throw new PrestoException(GENERIC_INTERNAL_ERROR, e);
     }
