@@ -51,7 +51,7 @@
         <slice.version>0.29</slice.version>
         <retrofit.version>2.1.0</retrofit.version>
         <converter-jackson.version>2.1.0</converter-jackson.version>
-        <jackson-databind.version>2.8.1</jackson-databind.version>
+        <jackson-databind.version>2.8.11.2</jackson-databind.version>
         <joda-time.version>2.9.9</joda-time.version>
     </properties>
 
@@ -163,7 +163,7 @@
                 <artifactId>joda-time</artifactId>
                 <version>${joda-time.version}</version>
             </dependency>
-            
+
         </dependencies>
     </dependencyManagement>
 </project>
