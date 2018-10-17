@@ -51,6 +51,7 @@
         <slice.version>0.29</slice.version>
         <retrofit.version>2.1.0</retrofit.version>
         <converter-jackson.version>2.1.0</converter-jackson.version>
+        <jackson.version>2.8.11</jackson.version>
         <jackson-databind.version>2.8.11.2</jackson-databind.version>
         <joda-time.version>2.9.9</joda-time.version>
     </properties>
@@ -132,6 +133,16 @@
                 <groupId>com.squareup.retrofit2</groupId>
                 <artifactId>converter-jackson</artifactId>
                 <version>${converter-jackson.version}</version>
+            </dependency>
+            <dependency>
+              <groupId>com.fasterxml.jackson.core</groupId>
+              <artifactId>jackson-core</artifactId>
+              <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+              <groupId>com.fasterxml.jackson.core</groupId>
+              <artifactId>jackson-annotations</artifactId>
+              <version>${jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
